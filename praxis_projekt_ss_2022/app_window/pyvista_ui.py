@@ -9,6 +9,10 @@ from pyvistaqt import QtInteractor, MainWindow
 
 os.environ["QT_API"] = "pyqt5"
 
+meshes = []
+actors = []
+count = [0]
+
 
 class MyMainWindow(MainWindow):
 
@@ -35,21 +39,45 @@ class MyMainWindow(MainWindow):
         exitButton.triggered.connect(self.close)
         fileMenu.addAction(exitButton)
 
-        # allow adding a sphere
+        # allow adding a mesh and clip box
         meshMenu = mainMenu.addMenu('Mesh')
-        self.add_sphere_action = QtWidgets.QAction('Add Mesh', self)
-        self.add_sphere_action.triggered.connect(self.add_mesh)
-        meshMenu.addAction(self.add_sphere_action)
+        self.add_mesh = QtWidgets.QAction('Add Mesh', self)
+        self.add_mesh.triggered.connect(self.add_mesh_func)
+        meshMenu.addAction(self.add_mesh)
+
+        self.add_mesh_box = QtWidgets.QAction('Mesh Segmentation', self)
+        self.add_mesh_box.triggered.connect(self.add_mesh_box_func)
+        meshMenu.addAction(self.add_mesh_box)
 
         if show:
             self.show()
 
-    def add_mesh(self):
+    # creates a new mesh and merge it, if one already exist
+    def add_mesh_func(self):
         """ add a sphere to the pyqt frame """
+        self.plotter.clear_box_widgets()
         sphere = pv.Sphere()
-        # self.plotter.add_mesh(sphere, show_edges=False)
-        self.plotter.add_mesh_clip_box(sphere, color='white')
+        trans = sphere.translate((0, 0, count[0]), inplace=True)
+        if meshes:
+            merged = meshes[0].merge(trans)
+            meshes[0] = merged
+        else:
+            meshes.append(trans)
+        count[0] += 1
+        if actors:
+            self.plotter.remove_actor(actors[0])
+            actors[0] = (self.plotter.add_mesh(meshes[0], name='mesh_{}'.format(1)))
+        else:
+            actors.append(self.plotter.add_mesh(meshes[0], name='mesh_{}'.format(1)))
         self.plotter.reset_camera()
+
+    # adds a mesh clip box
+    def add_mesh_box_func(self):
+        if actors:
+            self.plotter.remove_actor(actors[0])
+            actors[0] = (self.plotter.add_mesh_clip_box(meshes[0]))
+        else:
+            print("Error, no mesh loaded")
 
 
 if __name__ == '__main__':
