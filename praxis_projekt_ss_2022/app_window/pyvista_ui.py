@@ -1,18 +1,27 @@
 import sys
-
-# Setting the Qt bindings for QtPy
 import os
-import numpy as np
-from qtpy import QtWidgets, QtGui, QtCore
+from qtpy import QtWidgets
 import pyvista as pv
 from pyvistaqt import QtInteractor, MainWindow
+from app_functions.mesh_downsample import mesh_downsample
 
 os.environ["QT_API"] = "pyqt5"
 
-meshes = []
-actors = []
+'''
+full_mesh structur:
+    [0] = plotted function
+    [1] = full mesh
+    [2 - _] = singel parts of full mesh, in order of addition
+'''
+full_mesh = []
+
 count = [0]
 
+# Example for mesh
+new_mesh = pv.read('../models/shift_coords/ply_format/15_17-07 SE07011+012+013+014+015+016+017+018+019+020.ply')
+tex = pv.read_texture('../models/shift_coords/ply_format/15_17-07 SE07011+012+013+014+015+016+017+018+019+020.jpg')
+
+all_meshes = mesh_downsample()
 
 class MyMainWindow(MainWindow):
 
@@ -54,28 +63,30 @@ class MyMainWindow(MainWindow):
 
     # creates a new mesh and merge it, if one already exist
     def add_mesh_func(self):
-        """ add a sphere to the pyqt frame """
+        # clear the box_widget, if one exist
+        print(count[0])
         self.plotter.clear_box_widgets()
-        sphere = pv.Sphere()
-        trans = sphere.translate((0, 0, count[0]), inplace=True)
-        if meshes:
-            merged = meshes[0].merge(trans)
-            meshes[0] = merged
+        target_reduction = 0.9
+        mesh = all_meshes[0]
+        #mesh = mesh.decimate_pro(target_reduction, preserve_topology=True)
+        if full_mesh:
+            merged = full_mesh[1].merge(mesh)
+            full_mesh[0] = (self.plotter.add_mesh(merged, texture=tex))
+            full_mesh[1] = merged
+            full_mesh.append(mesh)
         else:
-            meshes.append(trans)
+            full_mesh.append(self.plotter.add_mesh(mesh, texture=tex))
+            full_mesh.append(mesh)
+            full_mesh.append(mesh)
         count[0] += 1
-        if actors:
-            self.plotter.remove_actor(actors[0])
-            actors[0] = (self.plotter.add_mesh(meshes[0], name='mesh_{}'.format(1)))
-        else:
-            actors.append(self.plotter.add_mesh(meshes[0], name='mesh_{}'.format(1)))
         self.plotter.reset_camera()
 
     # adds a mesh clip box
     def add_mesh_box_func(self):
-        if actors:
-            self.plotter.remove_actor(actors[0])
-            actors[0] = (self.plotter.add_mesh_clip_box(meshes[0]))
+        if full_mesh:
+            mesh_full = full_mesh[1]
+            self.plotter.clear()
+            full_mesh.append(self.plotter.add_mesh_clip_box(mesh_full, name='mesh_with_box', texture=tex))
         else:
             print("Error, no mesh loaded")
 
