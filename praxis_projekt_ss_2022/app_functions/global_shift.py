@@ -9,10 +9,10 @@ def utm_to_shift():
     decimal_places = 6
 
     # list the current items in specific format
-    utm_obj_list = search_for_format(UTM_PATH, ['obj'])
-    utm_rest_list = search_for_format(UTM_PATH, ['jpg', 'mtl'])
-    shift_obj_list = search_for_format(SHIFT_PATH, ['obj'])
-    shift_rest_list = search_for_format(SHIFT_PATH, ['jpg', 'mtl'])
+    utm_obj_list = search_for_format(UTM_PATH, ['obj'], cut=False)
+    utm_rest_list = search_for_format(UTM_PATH, ['jpg', 'mtl'], cut=False)
+    shift_obj_list = search_for_format(SHIFT_PATH, ['obj'], cut=False)
+    shift_rest_list = search_for_format(SHIFT_PATH, ['jpg', 'mtl'], cut=False)
 
     # list every new item, that isnt already processed
     new_obj = [elem for elem in utm_obj_list if elem not in shift_obj_list]
