@@ -7,5 +7,6 @@ if __name__ == '__main__':
     gs.utm_to_shift()
     otp.obj_ply_convert()
     ui.get_data()
+    ui.transform_downsampled_meshes()
     ui.colonia_4d()
 
