@@ -1,11 +1,12 @@
 import sys
 import os
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QApplication
-from qtpy import QtWidgets, QtCore
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, \
+    QPushButton
 import pyvista as pv
-from pyvistaqt import QtInteractor, MainWindow
+from pyvistaqt import QtInteractor
 from app_functions.mesh_downsample import mesh_downsample
 from app_functions.search_texture import get_textures
 
@@ -26,6 +27,7 @@ all_labels = []
 downsampled_meshes = []
 textures = []
 
+
 # downsampled meshes and textures
 def get_data():
     downsampled = mesh_downsample()
@@ -35,103 +37,172 @@ def get_data():
     for elem2 in tex:
         textures.append(elem2)
 
+
 # rotates the downsampled meshes at an 50 degree angle around the z-axis
 def transform_downsampled_meshes():
     for elem in downsampled_meshes:
         elem.rotate_z(50.0)
 
 
-class MyMainWindow(MainWindow, QWidget):
+# Ui setup
+class UiMainWindow(object):
+    def setup_ui(self, MainWindow):
+        MainWindow.setObjectName('MainWindow')
+        MainWindow.setWindowTitle('MainWindow')
+        MainWindow.resize(1500, 900)
+        self.centralwidget = QWidget(MainWindow)
+        self.centralwidget.setObjectName('centralWidnget')
+        MainWindow.setCentralWidget(self.centralwidget)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def __init__(self, parent=None, show=True):
-        QtWidgets.QMainWindow.__init__(self, parent)
+
+class Window(QtWidgets.QMainWindow):
+
+    resized = QtCore.pyqtSignal()
+
+    def __init__(self, parent=None):
+        super(Window, self).__init__(parent=parent)
+        ui = UiMainWindow()
+        ui.setup_ui(self)
+        self.setMinimumSize(1500, 900)
+        self.resized.connect(self.update_height)
 
         # create the frame
         self.frame = QFrame()
-
-        width = 1500
-        height = 900
-        self.setMinimumSize(width, height)
+        self.frame.setStyleSheet(open('resources/style_sheets/frame_style_sheet.txt').read().replace('\n', ''))
 
         # whole body
         vlayout = QHBoxLayout()
 
-        # right side
+        # right side panel
         right_widget = QVBoxLayout()
 
-        # add the pyvista interactor object
+        # pyvista interactor object
         self.plotter = QtInteractor(self.frame)
         vlayout.addWidget(self.plotter.interactor)
-        self.signal_close.connect(self.plotter.close)
+
+        self.plotter.add_background_image('resources/assets/colonia_4d_background.png')
 
         self.frame.setLayout(vlayout)
         self.setCentralWidget(self.frame)
 
-        # simple menu to demo functions
-        main_menu = self.menuBar()
-        file_menu = main_menu.addMenu('File')
-        exit_button = QAction('Exit', self)
-        exit_button.setShortcut('Ctrl+Q')
-        exit_button.triggered.connect(self.close)
-        file_menu.addAction(exit_button)
+        # Label
+        self.info_panel = QLabel()
+        self.info_panel.setStyleSheet(open('resources/style_sheets/label_style_sheet.txt').read().replace('\n', ''))
+        self.info_panel.setFont(QFont('helvetiker regular', 15))
+        self.info_panel.setText('Hello World')
+        self.info_panel.setAutoFillBackground(True)
+        self.info_panel.setFixedWidth(500)
+        self.info_panel.hide()
+        right_widget.addWidget(self.info_panel, alignment=QtCore.Qt.AlignTop)
 
-        # allow adding a mesh and clip box
-        meshMenu = main_menu.addMenu('Mesh')
+        # checkbox
+        check_boxes = []
+        for i in range(0, 20):
+            check_boxes.append(QCheckBox('Label'))
+
+        for elem in check_boxes:
+            elem.setStyleSheet(open('resources/style_sheets/checkbox_style_sheet.txt').read().replace('\n', ''))
+            elem.setFont(QFont('helvetiker regular', 10))
+            elem.setFixedWidth(440)
+            elem.stateChanged.connect(self.check_box_action)
+
+        # scroll area
+        self.scroll = QScrollArea()
+        self.scroll.setStyleSheet(open('resources/style_sheets/scroll_area_style_sheet.txt').read().replace('\n', ''))
+        self.scroll.verticalScrollBar().setStyleSheet(
+            open('resources/style_sheets/vertical_scroll_bar_style_sheet.txt').read().replace('\n', ''))
+        self.scroll.setFixedWidth(500)
+        self.scrollContent = QWidget(self.scroll)
+        self.scrollLayout = QVBoxLayout(self.scrollContent)
+        self.scrollContent.setLayout(self.scrollLayout)
+        for elem in check_boxes:
+            self.scrollLayout.addWidget(elem)
+        self.scroll.setWidget(self.scrollContent)
+        self.scroll.hide()
+        right_widget.addWidget(self.scroll)
+        vlayout.addLayout(right_widget)
+
+        '''
+        *** Menu Bar ***
+            -> File
+                -> Exit button
+            -> Mesh
+                -> load excavation side
+                -> mesh segmentation tool
+                -> add a custom mesh for interaction
+            -> Label
+                -> show/hide label
+                -> show/hide label side bar 
+        '''
+        main_menu = self.menuBar()
+        main_menu.setStyleSheet(open('resources/style_sheets/main_menu_style_sheet.txt').read().replace('\n', ''))
+        main_menu.setMinimumHeight(40)
+        main_menu.setFont(QFont('helvetiker regular', 13))
+
+        # ** File **
+        file_menu = main_menu.addMenu('File')
+        file_menu.setFont(QFont('helvetiker regular', 10))
+
+        self.exit_button = QAction('Exit', self)
+        self.exit_button.setShortcut('Ctrl+Q')
+        self.exit_button.triggered.connect(self.close)
+        file_menu.addAction(self.exit_button)
+
+        # ** Mesh Menu **
+        mesh_menu = main_menu.addMenu('Mesh')
+        mesh_menu.setFont(QFont('helvetiker regular', 10))
+
         self.add_mesh = QAction('Add Mesh', self)
         self.add_mesh.triggered.connect(self.load_custom_object)
-        meshMenu.addAction(self.add_mesh)
+        mesh_menu.addAction(self.add_mesh)
 
         self.add_plane = QAction('Mesh Plane', self, checkable=True)
         self.add_plane.setStatusTip('Mesh Plane')
         self.add_plane.setChecked(False)
         self.add_plane.triggered.connect(self.load_segmentation_tool)
-        meshMenu.addAction(self.add_plane)
+        mesh_menu.addAction(self.add_plane)
 
         self.load_mesh = QAction('Load all Segments', self)
         self.load_mesh.triggered.connect(self.load_excavation_side)
-        meshMenu.addAction(self.load_mesh)
+        mesh_menu.addAction(self.load_mesh)
 
-        self.load_the_labels = QAction('Load Labels', self, checkable=True)
-        self.load_the_labels.setStatusTip('Load Labels')
-        self.load_the_labels.setChecked(False)
-        self.load_the_labels.triggered.connect(self.load_labels)
-        meshMenu.addAction(self.load_the_labels)
+        # ** Label Menu **
+        label_menu = main_menu.addMenu('Labels')
+        label_menu.setFont(QFont('helvetiker regular', 10))
 
-        # toolbar
-        # exitAct = QAction(QIcon('exit24.png'), 'Exit', self)
-        # exitAct.setShortcut('Ctrl+Q')
-        # exitAct.triggered.connect(qApp.quit)
-        # self.toolbar = self.addToolBar('Exit')
-        # self.toolbar.addAction(exitAct)
+        self.labels = QAction('Load Labels', self, checkable=True)
+        self.labels.setStatusTip('Load Labels')
+        self.labels.setChecked(False)
+        self.labels.triggered.connect(self.load_labels)
+        label_menu.addAction(self.labels)
 
-        # Label
-        self.label = QLabel()
-        self.label.setText('Hello World')
-        self.label.setAutoFillBackground(True)
-        self.label.setFixedWidth(500)
-        self.label.setFixedHeight(450)
-        self.label.setStyleSheet("border: 3px solid black;")
-        right_widget.addWidget(self.label, alignment=QtCore.Qt.AlignTop)
-
-        # checkbox
-        self.checkbox_1 = QCheckBox('Interaction Mode')
-        self.checkbox_1.stateChanged.connect(self.check_box_action)
-        right_widget.addWidget(self.checkbox_1, alignment=QtCore.Qt.AlignTop)
-        vlayout.addLayout(right_widget)
+        self.panel = QAction('Info Panel', self, checkable=True)
+        self.panel.setStatusTip('Info Panel')
+        self.panel.setChecked(False)
+        self.panel.triggered.connect(self.hide_show)
+        label_menu.addAction(self.panel)
 
         # key events
-        self.plotter.add_key_event('p', self.hide_show)
         self.plotter.add_key_event('m', self.interaction_mode)
 
-        if show:
-            self.show()
+    # emits a signal is window is manually resized
+    def resizeEvent(self, event):
+        self.resized.emit()
+        return super(Window, self).resizeEvent(event)
+
+    # updates the height of the info panel in comparison to the actual window height
+    def update_height(self):
+        self.info_panel.setFixedHeight(self.height() / 2)
 
     # check box in side panel
     def check_box_action(self, state):
         if QtCore.Qt.Checked == state:
             self.interaction_mode()
+            self.info_panel.setText('Interactionmode On')
         else:
             self.interaction_mode()
+            self.info_panel.setText('Interactionmode Off')
 
     # makes interaction with every actor possible
     def interaction_mode(self):
@@ -146,12 +217,12 @@ class MyMainWindow(MainWindow, QWidget):
 
     # hides/shows the interactable sidepanel
     def hide_show(self):
-        if self.label.isHidden() and self.checkbox_1.isHidden():
-            self.label.show()
-            self.checkbox_1.show()
+        if self.info_panel.isHidden() and self.scroll.isHidden():
+            self.info_panel.show()
+            self.scroll.show()
         else:
-            self.label.hide()
-            self.checkbox_1.hide()
+            self.info_panel.hide()
+            self.scroll.hide()
 
     # custom object
     def load_custom_object(self):
@@ -230,6 +301,8 @@ class MyMainWindow(MainWindow, QWidget):
 
 
 def colonia_4d():
-    app = QApplication(sys.argv)
-    MyMainWindow()
+    app = QtWidgets.QApplication(sys.argv)
+    #app.setStyleSheet('.QFrame{background-color:#101010}')
+    w = Window()
+    w.show()
     sys.exit(app.exec_())

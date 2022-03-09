@@ -2,8 +2,8 @@ import shutil
 import pymeshlab
 from app_functions.search_for_format import search_for_format
 
-OBJ_PATH = 'models/shift_coords/obj_format/'
-PLY_PATH = 'models/shift_coords/ply_format/'
+OBJ_PATH = 'resources/models/shift_coords/obj_format/'
+PLY_PATH = 'resources/models/shift_coords/ply_format/'
 
 ms = pymeshlab.MeshSet()
 
@@ -28,5 +28,5 @@ def obj_ply_convert():
 
     for elem in new_obj:
         print(elem)
-        ms.load_new_mesh('models/shift_coords/obj_format/' + elem + '.obj')
-        ms.save_current_mesh('models/shift_coords/ply_format/' + elem + '.ply')
+        ms.load_new_mesh(OBJ_PATH + elem + '.obj')
+        ms.save_current_mesh(PLY_PATH + elem + '.ply')

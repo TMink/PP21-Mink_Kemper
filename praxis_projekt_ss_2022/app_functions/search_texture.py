@@ -1,7 +1,7 @@
 from app_functions.search_for_format import search_for_format
 import pyvista as pv
 
-JPG_PATH = 'models/shift_coords/ply_format/'
+JPG_PATH = 'resources/models/shift_coords/ply_format/'
 
 
 def get_textures():

@@ -1,8 +1,8 @@
 import shutil
 from app_functions.search_for_format import search_for_format
 
-UTM_PATH = 'models/utm_coords/'
-SHIFT_PATH = 'models/shift_coords/obj_format/'
+UTM_PATH = 'resources/models/utm_coords/'
+SHIFT_PATH = 'resources/models/shift_coords/obj_format/'
 
 
 def utm_to_shift():
