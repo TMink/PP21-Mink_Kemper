@@ -1,0 +1,5 @@
+Open3D     : pip install open3d
+PyVista    : pip install pyvista
+PyQt5      : pip install PyQt5
+PyMeshLab  : pip install pymeshlab
+

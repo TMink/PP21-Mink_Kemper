@@ -1,0 +1,2 @@
+background-color:white;
+border: 10px solid grey;
