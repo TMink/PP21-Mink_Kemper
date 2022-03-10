@@ -1,1 +1,0 @@
-3D-Modelle unter "/models/utm_coords" und dem jeweiligen Schnitt-Datum einfügen.
