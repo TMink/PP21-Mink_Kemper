@@ -7,10 +7,12 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox
     QPushButton
 import pyvista as pv
 from pyvistaqt import QtInteractor
-from app_functions.mesh_downsample import mesh_downsample
+from app_functions.search_for_format import search_for_format
 from app_functions.search_texture import get_textures
 
 os.environ["QT_API"] = "pyqt5"
+
+DECIMATED_PATH = 'resources/models/shift_coords/ply_format/decimated/'
 
 # lists of actor names (str)
 excavation_actors = []
@@ -24,23 +26,24 @@ plottet_interaction_actors = []
 
 interaction_style = [0]
 all_labels = []
-downsampled_meshes = []
+decimated_meshes = []
 textures = []
 
 
-# downsampled meshes and textures
+# get decimated meshes and textures
 def get_data():
-    downsampled = mesh_downsample()
+    meshes = search_for_format(DECIMATED_PATH, ['ply'], cut=False)
     tex = get_textures()
-    for elem in downsampled:
-        downsampled_meshes.append(elem)
+    for elem in meshes:
+        decimated_meshes.append(pv.read(DECIMATED_PATH + elem))
     for elem2 in tex:
         textures.append(elem2)
+    print(decimated_meshes)
 
 
 # rotates the downsampled meshes at an 50 degree angle around the z-axis
 def transform_downsampled_meshes():
-    for elem in downsampled_meshes:
+    for elem in decimated_meshes:
         elem.rotate_z(50.0)
 
 
@@ -231,7 +234,7 @@ class Window(QtWidgets.QMainWindow):
             plottet_interaction_actors.clear()
             mesh = pv.Cube()
             name = 'Cube'
-            mesh.translate(downsampled_meshes[0].center, inplace=True)
+            mesh.translate(decimated_meshes[0].center, inplace=True)
             plottet_interaction_actors.append(self.plotter.add_mesh(mesh=mesh, name=name))
             interaction_actors.append(name)
 
@@ -243,9 +246,9 @@ class Window(QtWidgets.QMainWindow):
         self.add_plane.setChecked(False)
         plottet_actors.clear()
         excavation_actors.clear()
-        if downsampled_meshes:
+        if decimated_meshes:
             count = 0
-            for elem, tex in zip(downsampled_meshes, textures):
+            for elem, tex in zip(decimated_meshes, textures):
                 name = 'excavation_%d' % count
                 plottet_actors.append(self.plotter.add_mesh(mesh=elem, name=name, texture=tex))
                 count += 1
@@ -254,7 +257,7 @@ class Window(QtWidgets.QMainWindow):
 
     # all given labels
     def load_labels(self, state):
-        points = [downsampled_meshes[0].center]
+        points = [decimated_meshes[0].center]
         labels = ['First Labels']
         if state:
             count = 0
@@ -269,7 +272,7 @@ class Window(QtWidgets.QMainWindow):
 
         plottet_actors.clear()
         self.plotter.remove_actor(excavation_actors)
-        self.plotter.add_mesh(mesh=downsampled_meshes[0], opacity=0.0, name='dummy')
+        self.plotter.add_mesh(mesh=decimated_meshes[0], opacity=0.0, name='dummy')
         excavation_actors.append('dummy')
 
         def callback_clip_mesh(normal, origin):
@@ -280,7 +283,7 @@ class Window(QtWidgets.QMainWindow):
 
             clipped_actors.clear()
 
-            for elem in downsampled_meshes:
+            for elem in decimated_meshes:
                 clipped_meshes.append(elem.clip(normal=normal, origin=origin))
                 clipped_actors.append("clipped_%d" % count)
                 count += 1
