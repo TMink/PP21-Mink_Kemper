@@ -3,8 +3,7 @@ import os
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, \
-    QPushButton
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, QMenu
 import pyvista as pv
 from pyvistaqt import QtInteractor
 from app_functions.search_for_format import search_for_format
@@ -28,6 +27,7 @@ interaction_style = [0]
 all_labels = []
 decimated_meshes = []
 textures = []
+ball = [2]
 
 
 # get decimated meshes and textures
@@ -38,12 +38,16 @@ def get_data():
         decimated_meshes.append(pv.read(DECIMATED_PATH + elem))
     for elem2 in tex:
         textures.append(elem2)
-    print(decimated_meshes)
 
 
 # rotates the downsampled meshes at an 50 degree angle around the z-axis
 def transform_downsampled_meshes():
+    x = decimated_meshes[0].center[0] * -1.0
+    y = decimated_meshes[0].center[1] * -1.0
+    z = decimated_meshes[0].center[2] * -1.0
     for elem in decimated_meshes:
+        elem.translate((x, y, z))
+        print(elem.center)
         elem.rotate_z(50.0)
 
 
@@ -60,7 +64,6 @@ class UiMainWindow(object):
 
 
 class Window(QtWidgets.QMainWindow):
-
     resized = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
@@ -85,6 +88,7 @@ class Window(QtWidgets.QMainWindow):
         vlayout.addWidget(self.plotter.interactor)
 
         self.plotter.add_background_image('resources/assets/colonia_4d_background.png')
+
 
         self.frame.setLayout(vlayout)
         self.setCentralWidget(self.frame)
@@ -133,6 +137,8 @@ class Window(QtWidgets.QMainWindow):
             -> Mesh
                 -> load excavation side
                 -> mesh segmentation tool
+                    -> textures
+                    -> color
                 -> add a custom mesh for interaction
             -> Label
                 -> show/hide label
@@ -156,19 +162,32 @@ class Window(QtWidgets.QMainWindow):
         mesh_menu = main_menu.addMenu('Mesh')
         mesh_menu.setFont(QFont('helvetiker regular', 10))
 
-        self.add_mesh = QAction('Add Mesh', self)
-        self.add_mesh.triggered.connect(self.load_custom_object)
-        mesh_menu.addAction(self.add_mesh)
+        self.excavation_side = QAction('Load excavations side', self)
+        self.excavation_side.triggered.connect(self.load_excavation_side)
+        mesh_menu.addAction(self.excavation_side)
 
-        self.add_plane = QAction('Mesh Plane', self, checkable=True)
-        self.add_plane.setStatusTip('Mesh Plane')
-        self.add_plane.setChecked(False)
-        self.add_plane.triggered.connect(self.load_segmentation_tool)
-        mesh_menu.addAction(self.add_plane)
+        # * Segmentation Menu *
+        self.segmentation_menu = QMenu('Segmentation Tool')
+        self.segmentation_menu.setStyleSheet(
+            open('resources/style_sheets/main_menu_style_sheet.txt').read().replace('\n', ''))
 
-        self.load_mesh = QAction('Load all Segments', self)
-        self.load_mesh.triggered.connect(self.load_excavation_side)
-        mesh_menu.addAction(self.load_mesh)
+        self.segmentation_tool_textures = QAction('With textures', self, checkable=True)
+        self.segmentation_tool_textures.setStatusTip('With textures')
+        self.segmentation_tool_textures.setChecked(False)
+        self.segmentation_tool_textures.triggered.connect(self.load_segmentation_tool)
+
+        self.segmentation_tool_color = QAction('With color', self, checkable=True)
+        self.segmentation_tool_color.setStatusTip('With color')
+        self.segmentation_tool_color.setChecked(False)
+        self.segmentation_tool_color.triggered.connect(self.load_segmentation_tool)
+
+        self.segmentation_menu.addAction(self.segmentation_tool_textures)
+        self.segmentation_menu.addAction(self.segmentation_tool_color)
+        mesh_menu.addMenu(self.segmentation_menu)
+
+        self.interaction_mesh = QAction('Add intractable Mesh', self)
+        self.interaction_mesh.triggered.connect(self.load_interaction_mesh)
+        mesh_menu.addAction(self.interaction_mesh)
 
         # ** Label Menu **
         label_menu = main_menu.addMenu('Labels')
@@ -228,7 +247,7 @@ class Window(QtWidgets.QMainWindow):
             self.scroll.hide()
 
     # custom object
-    def load_custom_object(self):
+    def load_interaction_mesh(self):
         if excavation_actors:
             interaction_actors.clear()
             plottet_interaction_actors.clear()
@@ -243,7 +262,8 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.remove_actor(excavation_actors)
         self.plotter.remove_actor(clipped_actors)
         self.plotter.clear_plane_widgets()
-        self.add_plane.setChecked(False)
+        self.segmentation_tool_textures.setChecked(False)
+        self.segmentation_tool_color.setChecked(False)
         plottet_actors.clear()
         excavation_actors.clear()
         if decimated_meshes:
@@ -272,13 +292,19 @@ class Window(QtWidgets.QMainWindow):
 
         plottet_actors.clear()
         self.plotter.remove_actor(excavation_actors)
-        self.plotter.add_mesh(mesh=decimated_meshes[0], opacity=0.0, name='dummy')
-        excavation_actors.append('dummy')
+        excavation_actors.clear()
+
+        count1 = 0
+        for elem in decimated_meshes:
+            name = 'excavation_%d' % count1
+            self.plotter.add_mesh(mesh=elem, name=name, opacity=0.0, show_scalar_bar=False, reset_camera=False)
+            count1 += 1
+            excavation_actors.append(name)
 
         def callback_clip_mesh(normal, origin):
 
             clipped_meshes = []
-            colors = ['blue', 'green']
+            colors = ['blue', 'green', 'red', 'yellow']
             count = 0
 
             clipped_actors.clear()
@@ -290,22 +316,37 @@ class Window(QtWidgets.QMainWindow):
 
             self.plotter.remove_actor(clipped_actors)
 
-            # load this for colored meshes
-            #for clip, col, name in zip(clipped_meshes, colors, clipped_actors):
-            #    plottet_actors.append(self.plotter.add_mesh(mesh=clip, color=col, name=name))
-
-            for clip, tex, name in zip(clipped_meshes, textures, clipped_actors):
-                plottet_actors.append(self.plotter.add_mesh(mesh=clip, texture=tex, name=name))
+            if ball[0] == 0:
+                for clip, tex, name in zip(clipped_meshes, textures, clipped_actors):
+                    plottet_actors.append(self.plotter.add_mesh(mesh=clip, texture=tex, name=name,
+                                                                show_scalar_bar=False, reset_camera=False))
+            elif ball[0] == 1:
+                for clip, col, name in zip(clipped_meshes, colors, clipped_actors):
+                    plottet_actors.append(self.plotter.add_mesh(mesh=clip, color=col, name=name,
+                                                                show_scalar_bar=False, reset_camera=False))
 
         if state:
-            self.plotter.add_plane_widget(callback_clip_mesh)
+
+            if self.segmentation_tool_textures.isChecked() and ball[0] != 0:
+                ball[0] = 0
+                self.plotter.reset_camera()
+                self.segmentation_tool_color.setChecked(False)
+                self.plotter.clear_plane_widgets()
+                self.plotter.add_plane_widget(callback_clip_mesh)
+            elif self.segmentation_tool_color.isChecked() and ball[0] != 1:
+                ball[0] = 1
+                self.plotter.reset_camera()
+                self.segmentation_tool_textures.setChecked(False)
+                self.plotter.clear_plane_widgets()
+                self.plotter.add_plane_widget(callback_clip_mesh)
+            else:
+                self.plotter.add_plane_widget(callback_clip_mesh)
         else:
             self.plotter.clear_plane_widgets()
 
 
 def colonia_4d():
     app = QtWidgets.QApplication(sys.argv)
-    #app.setStyleSheet('.QFrame{background-color:#101010}')
     w = Window()
     w.show()
     sys.exit(app.exec_())

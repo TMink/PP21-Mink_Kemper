@@ -11,7 +11,7 @@ TARGET = 100000
 ms = ml.MeshSet()
 
 
-def mesh_downsample_2():
+def decimate_meshes():
     ply_list = search_for_format(PLY_PATH, ['ply'], cut=False)
     decimated_ply_list = search_for_format(DECIMATED_PLY_PATH, ['ply'], cut=False)
     ply_rest_list = search_for_format(PLY_PATH, ['mtl', 'jpg'], cut=False)
@@ -35,4 +35,3 @@ def mesh_downsample_2():
             num_faces = num_faces - (ms.current_mesh().vertex_number() - TARGET)
 
         ms.save_current_mesh(DECIMATED_PLY_PATH + elem)
-

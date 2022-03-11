@@ -6,8 +6,8 @@ import app_window.pyvista_ui as ui
 
 if __name__ == '__main__':
     gs.utm_to_shift()
-    otp.obj_ply_convert()
-    dm.mesh_downsample_2()
+    otp.oby_to_ply()
+    dm.decimate_meshes()
     ui.get_data()
     ui.transform_downsampled_meshes()
     ui.colonia_4d()

@@ -8,7 +8,7 @@ PLY_PATH = 'resources/models/shift_coords/ply_format/'
 ms = pymeshlab.MeshSet()
 
 
-def obj_ply_convert():
+def oby_to_ply():
     # list the current items in specific format
     obj_list = search_for_format(OBJ_PATH, ['obj'], cut=True)
     ply_list = search_for_format(PLY_PATH, ['ply'], cut=True)
