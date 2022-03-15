@@ -3,7 +3,8 @@ import os
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, QMenu
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, QMenu, \
+    QPushButton, QGroupBox, QFormLayout, QSpacerItem, QSizePolicy
 import pyvista as pv
 from pyvistaqt import QtInteractor
 from app_functions.search_for_format import search_for_format
@@ -16,18 +17,27 @@ DECIMATED_PATH = 'resources/models/shift_coords/ply_format/decimated/'
 # lists of actor names (str)
 excavation_actors = []
 label_actors = []
-clipped_actors = []
+clipped_mesh_actors = []
 interaction_actors = []
 
-# lists of plottet meshes (VTK)
-plottet_actors = []
-plottet_interaction_actors = []
+# lists of plotted meshes (VTK)
+plotted_actors = []
+plotted_interaction_actors = []
+plotted_labels = []
+
+# list of clipped meshes
+clipped_meshes = []
+
+# semaphores
+segmentation_semaphor = [2]
+extraction_semaphor = [2]
 
 interaction_style = [0]
 all_labels = []
 decimated_meshes = []
 textures = []
-ball = [2]
+label_points = []
+label_names = []
 
 
 # get decimated meshes and textures
@@ -46,9 +56,11 @@ def transform_downsampled_meshes():
     y = decimated_meshes[0].center[1] * -1.0
     z = decimated_meshes[0].center[2] * -1.0
     for elem in decimated_meshes:
-        elem.translate((x, y, z))
-        print(elem.center)
-        elem.rotate_z(50.0)
+        elem.translate((x, y, z), inplace=True)
+        elem.rotate_z(50.0, inplace=True)
+
+    label_points.append(decimated_meshes[0].center)
+    label_names.append('Hello there!')
 
 
 # Ui setup
@@ -81,7 +93,7 @@ class Window(QtWidgets.QMainWindow):
         vlayout = QHBoxLayout()
 
         # right side panel
-        right_widget = QVBoxLayout()
+        panels = QVBoxLayout()
 
         # pyvista interactor object
         self.plotter = QtInteractor(self.frame)
@@ -89,10 +101,14 @@ class Window(QtWidgets.QMainWindow):
 
         self.plotter.add_background_image('resources/assets/colonia_4d_background.png')
 
-
         self.frame.setLayout(vlayout)
         self.setCentralWidget(self.frame)
 
+        '''
+        **************************************
+        *** Label info panel (ui settings) ***
+        **************************************
+        '''
         # Label
         self.info_panel = QLabel()
         self.info_panel.setStyleSheet(open('resources/style_sheets/label_style_sheet.txt').read().replace('\n', ''))
@@ -101,49 +117,83 @@ class Window(QtWidgets.QMainWindow):
         self.info_panel.setAutoFillBackground(True)
         self.info_panel.setFixedWidth(500)
         self.info_panel.hide()
-        right_widget.addWidget(self.info_panel, alignment=QtCore.Qt.AlignTop)
+        panels.addWidget(self.info_panel, alignment=QtCore.Qt.AlignTop)
 
         # checkbox
-        check_boxes = []
-        for i in range(0, 20):
-            check_boxes.append(QCheckBox('Label'))
+        self.check_boxes = []
+        for i in range(0, 10):
+            checkbox = QCheckBox('labelname')
+            checkbox.setObjectName('checkbox_%d' % i)
+            self.check_boxes.append(checkbox)
 
-        for elem in check_boxes:
+        for elem in self.check_boxes:
             elem.setStyleSheet(open('resources/style_sheets/checkbox_style_sheet.txt').read().replace('\n', ''))
             elem.setFont(QFont('helvetiker regular', 10))
             elem.setFixedWidth(440)
             elem.stateChanged.connect(self.check_box_action)
 
         # scroll area
-        self.scroll = QScrollArea()
-        self.scroll.setStyleSheet(open('resources/style_sheets/scroll_area_style_sheet.txt').read().replace('\n', ''))
-        self.scroll.verticalScrollBar().setStyleSheet(
+        self.scroll_labels = QScrollArea()
+        self.scroll_labels.setWidgetResizable(True)
+        self.scroll_labels.setStyleSheet('background-color: white;')
+        #self.scroll_labels.setStyleSheet(
+        #    open('resources/style_sheets/scroll_area_style_sheet.txt').read().replace('\n', ''))
+        self.scroll_labels.verticalScrollBar().setStyleSheet(
             open('resources/style_sheets/vertical_scroll_bar_style_sheet.txt').read().replace('\n', ''))
-        self.scroll.setFixedWidth(500)
-        self.scrollContent = QWidget(self.scroll)
-        self.scrollLayout = QVBoxLayout(self.scrollContent)
-        self.scrollContent.setLayout(self.scrollLayout)
-        for elem in check_boxes:
-            self.scrollLayout.addWidget(elem)
-        self.scroll.setWidget(self.scrollContent)
-        self.scroll.hide()
-        right_widget.addWidget(self.scroll)
-        vlayout.addLayout(right_widget)
+        self.scroll_labels.setFixedWidth(500)
+        self.scroll_labels_Content = QWidget()
+        self.scroll_labels_Layout = QVBoxLayout(self.scroll_labels_Content)
+        self.scroll_labels_Content.setLayout(self.scroll_labels_Layout)
+        for elem in self.check_boxes:
+            self.scroll_labels_Layout.addWidget(elem)
+        self.spacer_item = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.scroll_labels_Layout.addItem(self.spacer_item)
+        self.scroll_labels.setWidget(self.scroll_labels_Content)
+        self.scroll_labels.hide()
+        panels.addWidget(self.scroll_labels)
 
         '''
+        ****************************************
+        *** Interaction object (ui settings) ***
+        ****************************************
+        '''
+        self.button = QPushButton()
+        self.button.setText('Add interactable object')
+        self.button.setFixedWidth(500)
+        self.button.setStyleSheet('background-color: #DAA520;')
+
+        self.scroll_interactable_objects = QScrollArea()
+        self.scroll_interactable_objects.setFixedWidth(500)
+        self.scroll_interactable_objects.setStyleSheet('background-color: white;')
+        self.scroll_interactable_objects_Content = QWidget(self.scroll_interactable_objects)
+        self.scroll_interactable_objects_Layout = QVBoxLayout(self.scroll_interactable_objects_Content)
+        self.scroll_interactable_objects_Content.setLayout(self.scroll_interactable_objects_Layout)
+        self.scroll_interactable_objects_Layout.addWidget(self.button)
+        self.scroll_interactable_objects.hide()
+        panels.addWidget(self.scroll_interactable_objects)
+
+        vlayout.addLayout(panels)
+
+        '''
+        ****************
         *** Menu Bar ***
+        ****************
             -> File
                 -> Exit button
-            -> Mesh
+            -> Tools
                 -> load excavation side
                 -> mesh segmentation tool
-                    -> textures
-                    -> color
+                    -> load mesh with original textures
+                    -> load mesh with segment colors
                 -> add a custom mesh for interaction
+            -> Interactable Objects
+                -> shows/hides objects
+                -> show/hide objects info panel
             -> Label
-                -> show/hide label
-                -> show/hide label side bar 
+                -> shows/hides labels
+                -> show/hide label info panel
         '''
+        # *** Menu Bar ***
         main_menu = self.menuBar()
         main_menu.setStyleSheet(open('resources/style_sheets/main_menu_style_sheet.txt').read().replace('\n', ''))
         main_menu.setMinimumHeight(40)
@@ -158,15 +208,16 @@ class Window(QtWidgets.QMainWindow):
         self.exit_button.triggered.connect(self.close)
         file_menu.addAction(self.exit_button)
 
-        # ** Mesh Menu **
-        mesh_menu = main_menu.addMenu('Mesh')
+        # ** Mesh **
+        mesh_menu = main_menu.addMenu('Tools')
         mesh_menu.setFont(QFont('helvetiker regular', 10))
 
+        # * Load excavation side *
         self.excavation_side = QAction('Load excavations side', self)
         self.excavation_side.triggered.connect(self.load_excavation_side)
         mesh_menu.addAction(self.excavation_side)
 
-        # * Segmentation Menu *
+        # * Mesh segmentation tool *
         self.segmentation_menu = QMenu('Segmentation Tool')
         self.segmentation_menu.setStyleSheet(
             open('resources/style_sheets/main_menu_style_sheet.txt').read().replace('\n', ''))
@@ -185,28 +236,119 @@ class Window(QtWidgets.QMainWindow):
         self.segmentation_menu.addAction(self.segmentation_tool_color)
         mesh_menu.addMenu(self.segmentation_menu)
 
+        # * Mesh extraction tool *
+        self.extraction_menu = QMenu('Extraction Tool')
+        self.extraction_menu.setStyleSheet(
+            open('resources/style_sheets/main_menu_style_sheet.txt').read().replace('\n', ''))
+
+        self.extraction_tool_textures = QAction('With textures', self, checkable=True)
+        self.extraction_tool_textures.setStatusTip('With textures')
+        self.extraction_tool_textures.setChecked(False)
+        self.extraction_tool_textures.triggered.connect(self.load_extraction_tool)
+
+        self.extraction_tool_color = QAction('With color', self, checkable=True)
+        self.extraction_tool_color.setStatusTip('With color')
+        self.extraction_tool_color.setChecked(False)
+        self.extraction_tool_color.triggered.connect(self.load_extraction_tool)
+
+        self.extraction_menu.addAction(self.extraction_tool_textures)
+        self.extraction_menu.addAction(self.extraction_tool_color)
+        mesh_menu.addMenu(self.extraction_menu)
+
+        # * Add a custom mesh for interaction *
         self.interaction_mesh = QAction('Add intractable Mesh', self)
         self.interaction_mesh.triggered.connect(self.load_interaction_mesh)
         mesh_menu.addAction(self.interaction_mesh)
 
-        # ** Label Menu **
+        # ** Label **
         label_menu = main_menu.addMenu('Labels')
         label_menu.setFont(QFont('helvetiker regular', 10))
 
+        # * Shows/Hides labels *
         self.labels = QAction('Load Labels', self, checkable=True)
         self.labels.setStatusTip('Load Labels')
         self.labels.setChecked(False)
         self.labels.triggered.connect(self.load_labels)
         label_menu.addAction(self.labels)
 
+        # * Shows/Hides label info panel *
         self.panel = QAction('Info Panel', self, checkable=True)
         self.panel.setStatusTip('Info Panel')
         self.panel.setChecked(False)
-        self.panel.triggered.connect(self.hide_show)
+        self.panel.triggered.connect(self.hide_show_label_info_side_panel)
         label_menu.addAction(self.panel)
 
-        # key events
-        self.plotter.add_key_event('m', self.interaction_mode)
+        '''
+        ******************
+        *** Key events ***
+        ******************
+        '''
+        self.plotter.add_key_event('F1', self.view_reset)
+        self.plotter.add_key_event('F2', self.view_top)
+        self.plotter.add_key_event('F3', self.view_bottom)
+        self.plotter.add_key_event('F4', self.view_left)
+        self.plotter.add_key_event('F5', self.view_right)
+        self.plotter.add_key_event('F6', self.view_back)
+        self.plotter.add_key_event('F7', self.view_front)
+
+        self.plotter.add_key_event('m', self.add_checkbox)
+        self.plotter.add_key_event('l', self.delete_checkbox)
+
+    '''
+    *******************
+    *** Change view ***
+    *******************
+    Changes the view in relation so a certain vector
+        -> top (0, 0, 1)
+        -> bottom (0, 0, -1)
+        -> left (0, 1, 0)
+        -> right (0, -1, 0)
+        -> back (1, 0, 0)
+        -> front (-1, 0, 0)
+    '''
+
+    def view_reset(self):
+        self.plotter.view_isometric()
+
+    def view_top(self):
+        self.plotter.view_vector((0, 0, 1))
+        self.plotter.camera.roll = 180.0
+
+    def view_bottom(self):
+        self.plotter.view_vector((0, 0, -1))
+        self.plotter.camera.roll = 360.0
+
+    def view_left(self):
+        self.plotter.view_vector((0, 1, 0))
+
+    def view_right(self):
+        self.plotter.view_vector((0, -1, 0))
+
+    def view_back(self):
+        self.plotter.view_vector((1, 0, 0))
+
+    def view_front(self):
+        self.plotter.view_vector((-1, 0, 0))
+
+    '''
+    ********************
+    *** UI functions ***
+    ********************
+    '''
+
+    def add_checkbox(self):
+        self.scroll_labels_Layout.removeItem(self.spacer_item)
+        for elem in self.check_boxes:
+            if elem.objectName() == 'checkbox_2':
+                self.scroll_labels_Layout.addWidget(elem)
+                elem.show()
+        self.scroll_labels_Layout.addItem(self.spacer_item)
+
+    def delete_checkbox(self):
+        for elem in self.check_boxes:
+            if elem.objectName() == 'checkbox_2':
+                self.scroll_labels_Layout.removeWidget(elem)
+                elem.hide()
 
     # emits a signal is window is manually resized
     def resizeEvent(self, event):
@@ -226,73 +368,160 @@ class Window(QtWidgets.QMainWindow):
             self.interaction_mode()
             self.info_panel.setText('Interactionmode Off')
 
+    # hides/shows the interactable sidepanel
+    def hide_show_label_info_side_panel(self):
+        if self.info_panel.isHidden() and self.scroll_labels.isHidden():
+            self.info_panel.show()
+            self.scroll_labels.show()
+            self.scroll_interactable_objects.hide()
+        else:
+            self.info_panel.hide()
+            self.scroll_labels.hide()
+            self.panel.setChecked(False)
+
+    # hides/shows the interactable sidepanel
+    def hide_show_interaction_side_panel(self):
+        if self.scroll_interactable_objects.isHidden():
+            self.scroll_interactable_objects.show()
+            self.info_panel.hide()
+            self.scroll_labels.hide()
+            self.panel.setChecked(False)
+        else:
+            self.scroll_interactable_objects.hide()
+
+    '''
+    *************************
+    *** Interaction Style ***
+    *************************
+    '''
+
     # makes interaction with every actor possible
     def interaction_mode(self):
         if interaction_style[0] == 0 and interaction_actors:
             self.plotter.enable_trackball_actor_style()
-            self.plotter.pickable_actors = plottet_interaction_actors
+            self.plotter.pickable_actors = plotted_interaction_actors
             interaction_style[0] = 1
         elif interaction_style[0] == 1 and interaction_actors:
             self.plotter.enable_trackball_style()
-            self.plotter.pickable_actors = plottet_interaction_actors + plottet_actors
+            self.plotter.pickable_actors = plotted_interaction_actors + plotted_actors
             interaction_style[0] = 0
 
-    # hides/shows the interactable sidepanel
-    def hide_show(self):
-        if self.info_panel.isHidden() and self.scroll.isHidden():
-            self.info_panel.show()
-            self.scroll.show()
-        else:
-            self.info_panel.hide()
-            self.scroll.hide()
+    '''
+    **************************************
+    *** Loading/Manipulation of meshes ***
+    **************************************
+    '''
 
     # custom object
     def load_interaction_mesh(self):
         if excavation_actors:
             interaction_actors.clear()
-            plottet_interaction_actors.clear()
-            mesh = pv.Cube()
-            name = 'Cube'
-            mesh.translate(decimated_meshes[0].center, inplace=True)
-            plottet_interaction_actors.append(self.plotter.add_mesh(mesh=mesh, name=name))
-            interaction_actors.append(name)
+            plotted_interaction_actors.clear()
+            self.hide_show_interaction_side_panel()
+            # mesh = pv.Cube()
+            # name = 'Cube'
+            # mesh.translate(decimated_meshes[0].center, inplace=True)
+            # plotted_interaction_actors.append(self.plotter.add_mesh(mesh=mesh, name=name))
+            # interaction_actors.append(name)
 
     # excavation side segments
     def load_excavation_side(self):
         self.plotter.remove_actor(excavation_actors)
-        self.plotter.remove_actor(clipped_actors)
+        self.plotter.remove_actor(clipped_mesh_actors)
         self.plotter.clear_plane_widgets()
+        self.plotter.clear_box_widgets()
         self.segmentation_tool_textures.setChecked(False)
         self.segmentation_tool_color.setChecked(False)
-        plottet_actors.clear()
+        self.plotter.reset_camera()
+        plotted_actors.clear()
         excavation_actors.clear()
         if decimated_meshes:
             count = 0
             for elem, tex in zip(decimated_meshes, textures):
                 name = 'excavation_%d' % count
-                plottet_actors.append(self.plotter.add_mesh(mesh=elem, name=name, texture=tex))
+                plotted_actors.append(self.plotter.add_mesh(mesh=elem, name=name, texture=tex))
                 count += 1
                 excavation_actors.append(name)
-        self.plotter.reset_camera()
 
     # all given labels
     def load_labels(self, state):
-        points = [decimated_meshes[0].center]
-        labels = ['First Labels']
         if state:
-            count = 0
-            name = 'label_%d' % count
-            self.plotter.add_point_labels(points=points, labels=labels, point_size=20, font_size=36, name=name)
-            label_actors.append(name)
+            self.check_labels()
         else:
             self.plotter.remove_actor(label_actors)
 
     # segmentation tool
     def load_segmentation_tool(self, state):
+        self.plotter.clear_box_widgets()
+        self.extraction_tool_textures.setChecked(False)
+        self.extraction_tool_color.setChecked(False)
+        self.clear_tools()
 
-        plottet_actors.clear()
+        def clip_mesh(normal, origin):
+            self.segmentation_extraction(use='segmentation', param=[normal, origin])
+            extraction_semaphor[0] = 2
+
+        if state:
+            if self.segmentation_tool_textures.isChecked() and segmentation_semaphor[0] != 0:
+                segmentation_semaphor[0] = 0
+                self.plotter.reset_camera()
+                self.segmentation_tool_color.setChecked(False)
+                self.plotter.clear_plane_widgets()
+                self.plotter.add_plane_widget(clip_mesh)
+            elif self.segmentation_tool_color.isChecked() and segmentation_semaphor[0] != 1:
+                segmentation_semaphor[0] = 1
+                self.plotter.reset_camera()
+                self.segmentation_tool_textures.setChecked(False)
+                self.plotter.clear_plane_widgets()
+                self.plotter.add_plane_widget(clip_mesh)
+            else:
+                self.plotter.add_plane_widget(clip_mesh)
+        else:
+            self.check_labels()
+            self.plotter.clear_plane_widgets()
+
+    # extraction tool
+    def load_extraction_tool(self, state):
+        self.plotter.clear_plane_widgets()
+        self.segmentation_tool_textures.setChecked(False)
+        self.segmentation_tool_color.setChecked(False)
+        self.clear_tools()
+
+        def clip_mesh(box):
+            self.segmentation_extraction(use='extraction', param=[box])
+            segmentation_semaphor[0] = 2
+
+        if state:
+            if self.extraction_tool_textures.isChecked() and extraction_semaphor[0] != 0:
+                extraction_semaphor[0] = 0
+                self.plotter.reset_camera()
+                self.extraction_tool_color.setChecked(False)
+                self.plotter.clear_box_widgets()
+                self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
+            elif self.extraction_tool_color.isChecked() and extraction_semaphor[0] != 1:
+                extraction_semaphor[0] = 1
+                self.plotter.reset_camera()
+                self.extraction_tool_textures.setChecked(False)
+                self.plotter.clear_box_widgets()
+                self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
+            else:
+                self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
+        else:
+            self.check_labels()
+            self.plotter.clear_box_widgets()
+
+    '''
+    ***********************
+    *** Outsourced code ***
+    ***********************
+    '''
+
+    # clear tools
+    def clear_tools(self):
         self.plotter.remove_actor(excavation_actors)
+        self.plotter.remove_actor(label_actors)
         excavation_actors.clear()
+        plotted_actors.clear()
 
         count1 = 0
         for elem in decimated_meshes:
@@ -301,48 +530,73 @@ class Window(QtWidgets.QMainWindow):
             count1 += 1
             excavation_actors.append(name)
 
-        def callback_clip_mesh(normal, origin):
+    # segmentation_extraction
+    def segmentation_extraction(self, use: str, param: []):
+        colors = ['blue', 'green', 'red', 'yellow']
+        mesh_count = 0
 
-            clipped_meshes = []
-            colors = ['blue', 'green', 'red', 'yellow']
-            count = 0
+        clipped_meshes.clear()
+        clipped_mesh_actors.clear()
 
-            clipped_actors.clear()
+        for elem in decimated_meshes:
+            if use == 'segmentation':
+                clipped_meshes.append(elem.clip(normal=param[0], origin=param[1], inplace=False))
+            elif use == 'extraction':
+                clipped_meshes.append(elem.clip_box(param[0].bounds, invert=False))
+            clipped_mesh_actors.append("clipped_%d" % mesh_count)
+            mesh_count += 1
 
-            for elem in decimated_meshes:
-                clipped_meshes.append(elem.clip(normal=normal, origin=origin))
-                clipped_actors.append("clipped_%d" % count)
-                count += 1
+        self.plotter.remove_actor(clipped_mesh_actors)
 
-            self.plotter.remove_actor(clipped_actors)
+        if extraction_semaphor[0] == 0 or segmentation_semaphor[0] == 0:
+            for clip, tex, name in zip(clipped_meshes, textures, clipped_mesh_actors):
+                plotted_actors.append(self.plotter.add_mesh(mesh=clip, texture=tex, name=name,
+                                                            show_scalar_bar=False, reset_camera=False))
+        elif extraction_semaphor[0] == 1 or segmentation_semaphor[0] == 1:
+            for clip, col, name in zip(clipped_meshes, colors, clipped_mesh_actors):
+                plotted_actors.append(self.plotter.add_mesh(mesh=clip, color=col, name=name,
+                                                            show_scalar_bar=False, reset_camera=False))
 
-            if ball[0] == 0:
-                for clip, tex, name in zip(clipped_meshes, textures, clipped_actors):
-                    plottet_actors.append(self.plotter.add_mesh(mesh=clip, texture=tex, name=name,
-                                                                show_scalar_bar=False, reset_camera=False))
-            elif ball[0] == 1:
-                for clip, col, name in zip(clipped_meshes, colors, clipped_actors):
-                    plottet_actors.append(self.plotter.add_mesh(mesh=clip, color=col, name=name,
-                                                                show_scalar_bar=False, reset_camera=False))
+        if self.labels.isChecked():
+            self.check_labels()
 
-        if state:
+    def check_labels(self):
+        checked = [
+            self.segmentation_tool_textures.isChecked(),
+            self.segmentation_tool_color.isChecked(),
+            self.extraction_tool_textures.isChecked(),
+            self.extraction_tool_color.isChecked()
+        ]
 
-            if self.segmentation_tool_textures.isChecked() and ball[0] != 0:
-                ball[0] = 0
-                self.plotter.reset_camera()
-                self.segmentation_tool_color.setChecked(False)
-                self.plotter.clear_plane_widgets()
-                self.plotter.add_plane_widget(callback_clip_mesh)
-            elif self.segmentation_tool_color.isChecked() and ball[0] != 1:
-                ball[0] = 1
-                self.plotter.reset_camera()
-                self.segmentation_tool_textures.setChecked(False)
-                self.plotter.clear_plane_widgets()
-                self.plotter.add_plane_widget(callback_clip_mesh)
-            else:
-                self.plotter.add_plane_widget(callback_clip_mesh)
+        labels_points = []
+        labels_names = []
+        points_poly = pv.PolyData(label_points)
+        label_count = 0
+
+        self.plotter.remove_actor(label_actors)
+        label_actors.clear()
+
+        if not any(checked):
+            box = pv.Box(decimated_meshes[0].bounds)
         else:
-            self.plotter.clear_plane_widgets()
+            box = pv.Box(clipped_meshes[0].bounds)
+
+        select = points_poly.select_enclosed_points(box)
+        points_inside_box = select['SelectedPoints']
+
+        for selected, points, names in zip(points_inside_box, label_points, label_names):
+            if selected == 1:
+                name = 'label_%d' % label_count
+                labels_points.append(points)
+                labels_names.append(names)
+                label_actors.append(name)
+                label_count += 1
+
+        if 1 in points_inside_box:
+            for i in range(0, len(labels_points)):
+                self.plotter.add_point_labels(points=[labels_points[0]], labels=[labels_names[0]],
+                                              point_size=20, font_size=36, name=label_actors[0],
+                                              reset_camera=False)
 
 
 def colonia_4d():
