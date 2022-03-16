@@ -418,15 +418,15 @@ class Window(QtWidgets.QMainWindow):
 
     # custom object
     def load_interaction_mesh(self):
-        if excavation_actors:
+        if excavation_actors or clipped_mesh_actors:
             interaction_actors.clear()
             plotted_interaction_actors.clear()
             self.hide_show_interaction_side_panel()
-            # mesh = pv.Cube()
-            # name = 'Cube'
-            # mesh.translate(decimated_meshes[0].center, inplace=True)
-            # plotted_interaction_actors.append(self.plotter.add_mesh(mesh=mesh, name=name))
-            # interaction_actors.append(name)
+            mesh = pv.Cube()
+            name = 'Cube'
+            mesh.translate(decimated_meshes[0].center, inplace=True)
+            plotted_interaction_actors.append(self.plotter.add_mesh(mesh=mesh, name=name))
+            interaction_actors.append(name)
 
     # excavation side segments
     def load_excavation_side(self):
