@@ -338,20 +338,18 @@ class Window(QtWidgets.QMainWindow):
     ********************
     '''
 
-    def add_checkbox(self, pos):
+    # shows the element and adds a new spacer_item
+    def show_checkbox(self, pos):
         self.scroll_labels_Layout.removeItem(self.spacer_item)
-        one = 'checkbox_%d' % pos
         for elem in self.check_boxes:
-            if elem.objectName() == one:
-                self.scroll_labels_Layout.addWidget(elem)
+            if elem.objectName() == 'checkbox_%d' % pos:
                 elem.show()
         self.scroll_labels_Layout.addItem(self.spacer_item)
 
-    def delete_checkbox(self, pos):
-        zero = 'checkbox_%d' % pos
+    # hides a checkbox
+    def hide_checkbox(self, pos):
         for elem in self.check_boxes:
-            if elem.objectName() == zero:
-                self.scroll_labels_Layout.removeWidget(elem)
+            if elem.objectName() == 'checkbox_%d' % pos:
                 elem.hide()
 
     # emits a signal is window is manually resized
@@ -430,6 +428,8 @@ class Window(QtWidgets.QMainWindow):
 
     # excavation side segments
     def load_excavation_side(self):
+
+        # clear and reset
         self.plotter.remove_actor(excavation_actors)
         self.plotter.remove_actor(clipped_mesh_actors)
         self.plotter.clear_plane_widgets()
@@ -441,6 +441,7 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.reset_camera()
         plotted_actors.clear()
         excavation_actors.clear()
+
         if self.labels.isChecked():
             self.check_labels()
         if decimated_meshes:
@@ -461,6 +462,8 @@ class Window(QtWidgets.QMainWindow):
 
     # segmentation tool
     def load_segmentation_tool(self, state):
+
+        # clear and reset
         self.plotter.clear_box_widgets()
         self.extraction_tool_textures.setChecked(False)
         self.extraction_tool_color.setChecked(False)
@@ -486,11 +489,12 @@ class Window(QtWidgets.QMainWindow):
             else:
                 self.plotter.add_plane_widget(clip_mesh)
         else:
-            self.check_labels()
             self.plotter.clear_plane_widgets()
 
     # extraction tool
     def load_extraction_tool(self, state):
+
+        # clear and reset
         self.plotter.clear_plane_widgets()
         self.segmentation_tool_textures.setChecked(False)
         self.segmentation_tool_color.setChecked(False)
@@ -516,7 +520,7 @@ class Window(QtWidgets.QMainWindow):
             else:
                 self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
         else:
-            self.check_labels()
+            #self.check_labels()
             self.plotter.clear_box_widgets()
 
     '''
@@ -593,13 +597,14 @@ class Window(QtWidgets.QMainWindow):
         select = points_poly.select_enclosed_points(box)
         points_inside_box = select['SelectedPoints']
 
+        #
         count_dooku = 0
         for elem in points_inside_box:
             if elem == 0:
-                self.delete_checkbox(count_dooku)
+                self.hide_checkbox(count_dooku)
                 count_dooku += 1
             if elem == 1:
-                self.add_checkbox(count_dooku)
+                self.show_checkbox(count_dooku)
                 count_dooku += 1
 
         for selected, points, names in zip(points_inside_box, label_points, label_names):
