@@ -4,7 +4,7 @@ import os
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, QMenu, \
-    QPushButton, QGroupBox, QFormLayout, QSpacerItem, QSizePolicy
+    QPushButton, QSpacerItem, QSizePolicy
 import pyvista as pv
 from pyvistaqt import QtInteractor
 from app_functions.search_for_format import search_for_format
@@ -59,8 +59,13 @@ def transform_downsampled_meshes():
         elem.translate((x, y, z), inplace=True)
         elem.rotate_z(50.0, inplace=True)
 
-    label_points.append(decimated_meshes[0].center)
+    # labels
+    hello_there = decimated_meshes[0].center
+    hello_again = [decimated_meshes[0].center[0] + 1, decimated_meshes[0].center[1], decimated_meshes[0].center[0]]
+    label_points.append(hello_there)
+    label_points.append(hello_again)
     label_names.append('Hello there!')
+    label_names.append('Hello again!')
 
 
 # Ui setup
@@ -121,8 +126,8 @@ class Window(QtWidgets.QMainWindow):
 
         # checkbox
         self.check_boxes = []
-        for i in range(0, 10):
-            checkbox = QCheckBox('labelname')
+        for i in range(0, len(label_points)):
+            checkbox = QCheckBox(label_names[i])
             checkbox.setObjectName('checkbox_%d' % i)
             self.check_boxes.append(checkbox)
 
@@ -136,8 +141,6 @@ class Window(QtWidgets.QMainWindow):
         self.scroll_labels = QScrollArea()
         self.scroll_labels.setWidgetResizable(True)
         self.scroll_labels.setStyleSheet('background-color: white;')
-        #self.scroll_labels.setStyleSheet(
-        #    open('resources/style_sheets/scroll_area_style_sheet.txt').read().replace('\n', ''))
         self.scroll_labels.verticalScrollBar().setStyleSheet(
             open('resources/style_sheets/vertical_scroll_bar_style_sheet.txt').read().replace('\n', ''))
         self.scroll_labels.setFixedWidth(500)
@@ -291,8 +294,7 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.add_key_event('F6', self.view_back)
         self.plotter.add_key_event('F7', self.view_front)
 
-        self.plotter.add_key_event('m', self.add_checkbox)
-        self.plotter.add_key_event('l', self.delete_checkbox)
+        self.plotter.add_key_event('m', self.interaction_mode)
 
     '''
     *******************
@@ -336,17 +338,19 @@ class Window(QtWidgets.QMainWindow):
     ********************
     '''
 
-    def add_checkbox(self):
+    def add_checkbox(self, pos):
         self.scroll_labels_Layout.removeItem(self.spacer_item)
+        one = 'checkbox_%d' % pos
         for elem in self.check_boxes:
-            if elem.objectName() == 'checkbox_2':
+            if elem.objectName() == one:
                 self.scroll_labels_Layout.addWidget(elem)
                 elem.show()
         self.scroll_labels_Layout.addItem(self.spacer_item)
 
-    def delete_checkbox(self):
+    def delete_checkbox(self, pos):
+        zero = 'checkbox_%d' % pos
         for elem in self.check_boxes:
-            if elem.objectName() == 'checkbox_2':
+            if elem.objectName() == zero:
                 self.scroll_labels_Layout.removeWidget(elem)
                 elem.hide()
 
@@ -432,9 +436,13 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.clear_box_widgets()
         self.segmentation_tool_textures.setChecked(False)
         self.segmentation_tool_color.setChecked(False)
+        self.extraction_tool_textures.setChecked(False)
+        self.extraction_tool_color.setChecked(False)
         self.plotter.reset_camera()
         plotted_actors.clear()
         excavation_actors.clear()
+        if self.labels.isChecked():
+            self.check_labels()
         if decimated_meshes:
             count = 0
             for elem, tex in zip(decimated_meshes, textures):
@@ -446,7 +454,8 @@ class Window(QtWidgets.QMainWindow):
     # all given labels
     def load_labels(self, state):
         if state:
-            self.check_labels()
+            if excavation_actors or clipped_mesh_actors:
+                self.check_labels()
         else:
             self.plotter.remove_actor(label_actors)
 
@@ -584,6 +593,15 @@ class Window(QtWidgets.QMainWindow):
         select = points_poly.select_enclosed_points(box)
         points_inside_box = select['SelectedPoints']
 
+        count_dooku = 0
+        for elem in points_inside_box:
+            if elem == 0:
+                self.delete_checkbox(count_dooku)
+                count_dooku += 1
+            if elem == 1:
+                self.add_checkbox(count_dooku)
+                count_dooku += 1
+
         for selected, points, names in zip(points_inside_box, label_points, label_names):
             if selected == 1:
                 name = 'label_%d' % label_count
@@ -594,8 +612,8 @@ class Window(QtWidgets.QMainWindow):
 
         if 1 in points_inside_box:
             for i in range(0, len(labels_points)):
-                self.plotter.add_point_labels(points=[labels_points[0]], labels=[labels_names[0]],
-                                              point_size=20, font_size=36, name=label_actors[0],
+                self.plotter.add_point_labels(points=[labels_points[i]], labels=[labels_names[i]],
+                                              point_size=20, font_size=36, name=label_actors[i],
                                               reset_camera=False)
 
 
