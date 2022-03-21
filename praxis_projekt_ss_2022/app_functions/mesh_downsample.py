@@ -1,6 +1,4 @@
 import shutil
-
-import pyvista as pv
 from app_functions.search_for_format import search_for_format
 import pymeshlab as ml
 

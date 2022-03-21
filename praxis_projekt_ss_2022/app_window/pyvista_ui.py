@@ -15,28 +15,40 @@ os.environ["QT_API"] = "pyqt5"
 DECIMATED_PATH = 'resources/models/shift_coords/ply_format/decimated/'
 
 # lists of actor names (str)
-excavation_actors = []
-label_actors = []
-clipped_mesh_actors = []
 interaction_actors = []
 
 # lists of plotted meshes (VTK)
-plotted_actors = []
 plotted_interaction_actors = []
-plotted_labels = []
 
-# list of clipped meshes
-clipped_meshes = []
+plotted_arc = []
+
+# dict with 'layer_name : plotted layer' ( str : VTK )
+# example -> 'layer_name' : self.plotter.add_mesh(mesh=decimated_mesh[0], name='layer_name', texture=textures[0])
+excavation_layers = {}
+
+# dict with 'clipped_layer_name : plotted_clipped_layer' ( str : VTK )
+# example -> 'clipped_layer_name' : self.plotter.add_mesh(mesh=clipped_meshes[0], texture=textures[0],
+#                                                      name='clipped_layer_name', show_scalar_bar=False,
+#                                                      reset_camera=False)
+# If used in segmentation tool: plotted_clipped_layer == PolyData
+# If used in extraction tool  : plotted_clipped_layer == UnstructuredGrid
+clipped_layers = {}
+
+# dict with 'label_name : plotted_label' ( str : VTK )
+# example -> 'label_name : self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key], point_size=20,
+#                                                     font_size=36, name='label_name', reset_camera=False)
+labels = {}
 
 # semaphores
 segmentation_semaphor = [2]
 extraction_semaphor = [2]
-
+dummy_semaphore = [1]
 interaction_style = [0]
-all_labels = []
+
+# input content
 decimated_meshes = []
 textures = []
-label_points = []
+label_coordinates = []
 label_names = []
 
 
@@ -62,22 +74,22 @@ def transform_downsampled_meshes():
     # labels
     hello_there = decimated_meshes[0].center
     hello_again = [decimated_meshes[0].center[0] + 1, decimated_meshes[0].center[1], decimated_meshes[0].center[0]]
-    label_points.append(hello_there)
-    label_points.append(hello_again)
+    label_coordinates.append(hello_there)
+    label_coordinates.append(hello_again)
     label_names.append('Hello there!')
     label_names.append('Hello again!')
 
 
 # Ui setup
 class UiMainWindow(object):
-    def setup_ui(self, MainWindow):
-        MainWindow.setObjectName('MainWindow')
-        MainWindow.setWindowTitle('MainWindow')
-        MainWindow.resize(1500, 900)
-        self.centralwidget = QWidget(MainWindow)
+    def setup_ui(self, main_window):
+        main_window.setObjectName('MainWindow')
+        main_window.setWindowTitle('MainWindow')
+        main_window.resize(1500, 900)
+        self.centralwidget = QWidget(main_window)
         self.centralwidget.setObjectName('centralWidnget')
-        MainWindow.setCentralWidget(self.centralwidget)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        main_window.setCentralWidget(self.centralwidget)
+        QtCore.QMetaObject.connectSlotsByName(main_window)
 
 
 class Window(QtWidgets.QMainWindow):
@@ -104,7 +116,7 @@ class Window(QtWidgets.QMainWindow):
         self.plotter = QtInteractor(self.frame)
         vlayout.addWidget(self.plotter.interactor)
 
-        self.plotter.add_background_image('resources/assets/colonia_4d_background.png')
+        self.plotter.add_background_image('resources/assets/colonia_4d_background_one_color.png')
 
         self.frame.setLayout(vlayout)
         self.setCentralWidget(self.frame)
@@ -126,7 +138,7 @@ class Window(QtWidgets.QMainWindow):
 
         # checkbox
         self.check_boxes = []
-        for i in range(0, len(label_points)):
+        for i in range(0, len(label_coordinates)):
             checkbox = QCheckBox(label_names[i])
             checkbox.setObjectName('checkbox_%d' % i)
             self.check_boxes.append(checkbox)
@@ -206,6 +218,7 @@ class Window(QtWidgets.QMainWindow):
         file_menu = main_menu.addMenu('File')
         file_menu.setFont(QFont('helvetiker regular', 10))
 
+        # * Exit button *
         self.exit_button = QAction('Exit', self)
         self.exit_button.setShortcut('Ctrl+Q')
         self.exit_button.triggered.connect(self.close)
@@ -259,7 +272,7 @@ class Window(QtWidgets.QMainWindow):
         mesh_menu.addMenu(self.extraction_menu)
 
         # * Add a custom mesh for interaction *
-        self.interaction_mesh = QAction('Add intractable Mesh', self)
+        self.interaction_mesh = QAction('Add interactable Mesh', self)
         self.interaction_mesh.triggered.connect(self.load_interaction_mesh)
         mesh_menu.addAction(self.interaction_mesh)
 
@@ -294,7 +307,10 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.add_key_event('F6', self.view_back)
         self.plotter.add_key_event('F7', self.view_front)
 
-        self.plotter.add_key_event('m', self.interaction_mode)
+        self.plotter.add_key_event('m', self.add_arc)
+        self.plotter.add_key_event('l', self.add_cut)
+
+        self.plotter.add_key_event('j', self.interaction_mode)
 
     '''
     *******************
@@ -337,6 +353,27 @@ class Window(QtWidgets.QMainWindow):
     *** UI functions ***
     ********************
     '''
+
+    def add_arc(self):
+        pass
+        # plotted_arc.append(arc)
+
+    def add_cut(self):
+        self.plotter.remove_actor(excavation_layers.keys())
+
+        arc = pv.CircularArc([0, -4, -1], [0, 4, -1], [0, 0, -1])
+        arc = arc.extrude([0, 0, 2], inplace=True)
+        arc = arc.rotate_z(180)
+        poly_arc = pv.PolyData(arc)
+
+        mesh = decimated_meshes[0]
+
+        # print('arc: ', arc)
+        # print('decimated_mesh: ', decimated_meshes[0])
+
+        clip = mesh.clip_surface(poly_arc)
+        self.plotter.add_mesh(poly_arc, style='wireframe', show_scalar_bar=False)
+        self.plotter.add_mesh(clip, texture=textures[0])
 
     # shows the element and adds a new spacer_item
     def show_checkbox(self, pos):
@@ -405,7 +442,7 @@ class Window(QtWidgets.QMainWindow):
             interaction_style[0] = 1
         elif interaction_style[0] == 1 and interaction_actors:
             self.plotter.enable_trackball_style()
-            self.plotter.pickable_actors = plotted_interaction_actors + plotted_actors
+            self.plotter.pickable_actors = excavation_layers.values()
             interaction_style[0] = 0
 
     '''
@@ -416,10 +453,10 @@ class Window(QtWidgets.QMainWindow):
 
     # custom object
     def load_interaction_mesh(self):
-        if excavation_actors or clipped_mesh_actors:
+        if excavation_layers or clipped_layers:
             interaction_actors.clear()
             plotted_interaction_actors.clear()
-            self.hide_show_interaction_side_panel()
+            # self.hide_show_interaction_side_panel()
             mesh = pv.Cube()
             name = 'Cube'
             mesh.translate(decimated_meshes[0].center, inplace=True)
@@ -428,37 +465,34 @@ class Window(QtWidgets.QMainWindow):
 
     # excavation side segments
     def load_excavation_side(self):
+        # In case the user switches between tools and do not uncheck them, the semaphore get reset
+        dummy_semaphore[0] = 1
 
         # clear and reset
-        self.plotter.remove_actor(excavation_actors)
-        self.plotter.remove_actor(clipped_mesh_actors)
+        self.plotter.remove_actor(excavation_layers.keys())
+        self.plotter.remove_actor(clipped_layers.keys())
         self.plotter.clear_plane_widgets()
         self.plotter.clear_box_widgets()
         self.segmentation_tool_textures.setChecked(False)
         self.segmentation_tool_color.setChecked(False)
         self.extraction_tool_textures.setChecked(False)
         self.extraction_tool_color.setChecked(False)
-        self.plotter.reset_camera()
-        plotted_actors.clear()
-        excavation_actors.clear()
+        excavation_layers.clear()
 
         if self.labels.isChecked():
             self.check_labels()
         if decimated_meshes:
-            count = 0
-            for elem, tex in zip(decimated_meshes, textures):
-                name = 'excavation_%d' % count
-                plotted_actors.append(self.plotter.add_mesh(mesh=elem, name=name, texture=tex))
-                count += 1
-                excavation_actors.append(name)
+            for idx, (elem, tex) in enumerate(zip(decimated_meshes, textures)):
+                name = 'layer_{}'.format(idx)
+                excavation_layers[name] = self.plotter.add_mesh(mesh=elem, name=name, texture=tex)
 
     # all given labels
     def load_labels(self, state):
         if state:
-            if excavation_actors or clipped_mesh_actors:
+            if excavation_layers or clipped_layers:
                 self.check_labels()
         else:
-            self.plotter.remove_actor(label_actors)
+            self.plotter.remove_actor(labels.keys())
 
     # segmentation tool
     def load_segmentation_tool(self, state):
@@ -467,60 +501,57 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.clear_box_widgets()
         self.extraction_tool_textures.setChecked(False)
         self.extraction_tool_color.setChecked(False)
-        self.clear_tools()
+        self.plotter.remove_actor(labels.keys())
+        if dummy_semaphore[0] == 1:
+            self.load_dummy_object()
+            dummy_semaphore[0] = 0
 
         def clip_mesh(normal, origin):
-            self.segmentation_extraction(use='segmentation', param=[normal, origin])
             extraction_semaphor[0] = 2
+            self.clipping(use='segmentation', param=[normal, origin])
 
         if state:
             if self.segmentation_tool_textures.isChecked() and segmentation_semaphor[0] != 0:
                 segmentation_semaphor[0] = 0
-                self.plotter.reset_camera()
-                self.segmentation_tool_color.setChecked(False)
-                self.plotter.clear_plane_widgets()
+                self.clear_tool(use='segmentation_tool', tex_or_col='tex')
                 self.plotter.add_plane_widget(clip_mesh)
             elif self.segmentation_tool_color.isChecked() and segmentation_semaphor[0] != 1:
                 segmentation_semaphor[0] = 1
-                self.plotter.reset_camera()
-                self.segmentation_tool_textures.setChecked(False)
-                self.plotter.clear_plane_widgets()
+                self.clear_tool(use='segmentation_tool', tex_or_col='col')
                 self.plotter.add_plane_widget(clip_mesh)
             else:
                 self.plotter.add_plane_widget(clip_mesh)
         else:
+            self.check_labels()
+            dummy_semaphore[0] = 1
             self.plotter.clear_plane_widgets()
 
     # extraction tool
     def load_extraction_tool(self, state):
-
         # clear and reset
         self.plotter.clear_plane_widgets()
         self.segmentation_tool_textures.setChecked(False)
         self.segmentation_tool_color.setChecked(False)
-        self.clear_tools()
+        self.plotter.remove_actor(labels.keys())
+        if dummy_semaphore[0] == 1:
+            self.load_dummy_object()
+            dummy_semaphore[0] = 0
 
         def clip_mesh(box):
-            self.segmentation_extraction(use='extraction', param=[box])
             segmentation_semaphor[0] = 2
+            self.clipping(use='extraction', param=[box])
 
         if state:
             if self.extraction_tool_textures.isChecked() and extraction_semaphor[0] != 0:
                 extraction_semaphor[0] = 0
-                self.plotter.reset_camera()
-                self.extraction_tool_color.setChecked(False)
-                self.plotter.clear_box_widgets()
-                self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
+                self.clear_tool(use='extraction_tool', tex_or_col='tex')
             elif self.extraction_tool_color.isChecked() and extraction_semaphor[0] != 1:
                 extraction_semaphor[0] = 1
-                self.plotter.reset_camera()
-                self.extraction_tool_textures.setChecked(False)
-                self.plotter.clear_box_widgets()
-                self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
-            else:
-                self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
+                self.clear_tool(use='extraction_tool', tex_or_col='col')
+            self.plotter.add_box_widget(clip_mesh, rotation_enabled=False)
         else:
-            #self.check_labels()
+            self.check_labels()
+            dummy_semaphore[0] = 1
             self.plotter.clear_box_widgets()
 
     '''
@@ -529,46 +560,60 @@ class Window(QtWidgets.QMainWindow):
     ***********************
     '''
 
-    # clear tools
-    def clear_tools(self):
-        self.plotter.remove_actor(excavation_actors)
-        self.plotter.remove_actor(label_actors)
-        excavation_actors.clear()
-        plotted_actors.clear()
+    # dummy object
+    def load_dummy_object(self):
+        self.clear_tool(use='excavation_side')
+        # For the clipping algorithm to work, a mesh, where the plane/box widget can itself attach to, must preexist.
+        # Therefore an invisible dummy is created.
+        for idx, elem in enumerate(decimated_meshes):
+            name = 'dummy_layer_{}'.format(idx)
+            excavation_layers[name] = self.plotter.add_mesh(mesh=elem, name=name, opacity=0.0,
+                                                            show_scalar_bar=False, reset_camera=False)
 
-        count1 = 0
-        for elem in decimated_meshes:
-            name = 'excavation_%d' % count1
-            self.plotter.add_mesh(mesh=elem, name=name, opacity=0.0, show_scalar_bar=False, reset_camera=False)
-            count1 += 1
-            excavation_actors.append(name)
+    # clear tools
+    def clear_tool(self, use: str, tex_or_col='_'):
+        if use == 'excavation_side':
+            self.plotter.remove_actor(excavation_layers.keys())
+            excavation_layers.clear()
+        else:
+            self.plotter.reset_camera()
+            if use == 'segmentation_tool':
+                if tex_or_col == 'tex':
+                    self.segmentation_tool_color.setChecked(False)
+                if tex_or_col == 'col':
+                    self.segmentation_tool_textures.setChecked(False)
+                self.plotter.clear_plane_widgets()
+            if use == 'extraction_tool':
+                if tex_or_col == 'tex':
+                    self.extraction_tool_color.setChecked(False)
+                if tex_or_col == 'col':
+                    self.extraction_tool_textures.setChecked(False)
+                self.plotter.clear_box_widgets()
 
     # segmentation_extraction
-    def segmentation_extraction(self, use: str, param: []):
+    def clipping(self, use: str, param: []):
         colors = ['blue', 'green', 'red', 'yellow']
-        mesh_count = 0
 
-        clipped_meshes.clear()
-        clipped_mesh_actors.clear()
+        self.plotter.remove_actor(clipped_layers.keys())
+        clipped_layers.clear()
 
-        for elem in decimated_meshes:
+        for idx, elem in enumerate(decimated_meshes):
+            name = "clipped_layer_%d" % idx
             if use == 'segmentation':
-                clipped_meshes.append(elem.clip(normal=param[0], origin=param[1], inplace=False))
+                clipped_layers[name] = elem.clip(normal=param[0], origin=param[1], inplace=False)
             elif use == 'extraction':
-                clipped_meshes.append(elem.clip_box(param[0].bounds, invert=False))
-            clipped_mesh_actors.append("clipped_%d" % mesh_count)
-            mesh_count += 1
+                clipped_layers[name] = elem.clip_box(param[0].bounds, invert=False)
 
-        self.plotter.remove_actor(clipped_mesh_actors)
+        print(clipped_layers)
 
         if extraction_semaphor[0] == 0 or segmentation_semaphor[0] == 0:
-            for clip, tex, name in zip(clipped_meshes, textures, clipped_mesh_actors):
-                plotted_actors.append(self.plotter.add_mesh(mesh=clip, texture=tex, name=name,
-                                                            show_scalar_bar=False, reset_camera=False))
+            for tex, name in zip(textures, clipped_layers.keys()):
+                excavation_layers[name] = self.plotter.add_mesh(mesh=clipped_layers[name], texture=tex, name=name,
+                                                                show_scalar_bar=False, reset_camera=False)
         elif extraction_semaphor[0] == 1 or segmentation_semaphor[0] == 1:
-            for clip, col, name in zip(clipped_meshes, colors, clipped_mesh_actors):
-                plotted_actors.append(self.plotter.add_mesh(mesh=clip, color=col, name=name,
-                                                            show_scalar_bar=False, reset_camera=False))
+            for col, name in zip(colors, clipped_layers.keys()):
+                excavation_layers[name] = self.plotter.add_mesh(mesh=clipped_layers[name], color=col, name=name,
+                                                                show_scalar_bar=False, reset_camera=False)
 
         if self.labels.isChecked():
             self.check_labels()
@@ -581,23 +626,21 @@ class Window(QtWidgets.QMainWindow):
             self.extraction_tool_color.isChecked()
         ]
 
-        labels_points = []
-        labels_names = []
-        points_poly = pv.PolyData(label_points)
-        label_count = 0
+        visible_labels = {}
+        points_poly = pv.PolyData(label_coordinates)
 
-        self.plotter.remove_actor(label_actors)
-        label_actors.clear()
+        self.plotter.remove_actor(labels.keys())
+        labels.clear()
 
-        if not any(checked):
+        if not any(checked) and not clipped_layers:
             box = pv.Box(decimated_meshes[0].bounds)
         else:
-            box = pv.Box(clipped_meshes[0].bounds)
+            box = pv.Box(clipped_layers['clipped_layer_0'].bounds)
 
         select = points_poly.select_enclosed_points(box)
         points_inside_box = select['SelectedPoints']
 
-        #
+        # show/hide checkboxes
         count_dooku = 0
         for elem in points_inside_box:
             if elem == 0:
@@ -607,19 +650,16 @@ class Window(QtWidgets.QMainWindow):
                 self.show_checkbox(count_dooku)
                 count_dooku += 1
 
-        for selected, points, names in zip(points_inside_box, label_points, label_names):
+        for selected, point, name in zip(points_inside_box, label_coordinates, label_names):
             if selected == 1:
-                name = 'label_%d' % label_count
-                labels_points.append(points)
-                labels_names.append(names)
-                label_actors.append(name)
-                label_count += 1
+                visible_labels[name] = point
 
         if 1 in points_inside_box:
-            for i in range(0, len(labels_points)):
-                self.plotter.add_point_labels(points=[labels_points[i]], labels=[labels_names[i]],
-                                              point_size=20, font_size=36, name=label_actors[i],
-                                              reset_camera=False)
+            for idx, key in enumerate(visible_labels):
+                name = 'label_{}'.format(idx)
+                labels[name] = self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key],
+                                                             point_size=20, font_size=36, name=name,
+                                                             reset_camera=False)
 
 
 def colonia_4d():

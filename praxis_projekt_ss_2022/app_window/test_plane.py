@@ -1,35 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+list = [1, 2, 3, 4, 5]
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.setWindowTitle("MainWindow")
-        MainWindow.resize(200, 200)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        MainWindow.setCentralWidget(self.centralwidget)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-
-class Window(QtWidgets.QMainWindow):
-    resized = QtCore.pyqtSignal()
-    def  __init__(self, parent=None):
-        super(Window, self).__init__(parent=parent)
-        ui = Ui_MainWindow()
-        ui.setupUi(self)
-        self.resized.connect(self.someFunction)
-
-    def resizeEvent(self, event):
-        self.resized.emit()
-        return super(Window, self).resizeEvent(event)
-
-    def someFunction(self):
-        print("someFunction")
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    w = Window()
-    w.show()
-    sys.exit(app.exec_())
+for idx, elem in enumerate(list):
+    print('idx: {}, nbr: {}'.format(elem, idx))
