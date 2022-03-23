@@ -1,6 +1,12 @@
+# ----------------------------------------------------------------------------
+# Created By  : Tobias Mink, Marvin Kemper
+# ---------------------------------------------------------------------------
+"""  """
+# ---------------------------------------------------------------------------
 import sys
 import os
 
+import numpy as np
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QAction, QFrame, QScrollArea, QMenu, \
@@ -39,6 +45,10 @@ clipped_layers = {}
 #                                                     font_size=36, name='label_name', reset_camera=False)
 labels = {}
 
+# dict with 'object_name : plotted object' ( str : VTK )
+# example ->
+interaction_objects = {}
+
 # semaphores
 segmentation_semaphor = [2]
 extraction_semaphor = [2]
@@ -52,7 +62,7 @@ label_coordinates = []
 label_names = []
 
 
-# get decimated meshes and textures
+# loads all converted meshes and corresponding textures in decimated_meshes and textures
 def get_data():
     meshes = search_for_format(DECIMATED_PATH, ['ply'], cut=False)
     tex = get_textures()
@@ -62,7 +72,7 @@ def get_data():
         textures.append(elem2)
 
 
-# rotates the downsampled meshes at an 50 degree angle around the z-axis
+# rotates the content of decimated_meshes at an 50 degree angle around the z-axis
 def transform_downsampled_meshes():
     x = decimated_meshes[0].center[0] * -1.0
     y = decimated_meshes[0].center[1] * -1.0
@@ -73,7 +83,7 @@ def transform_downsampled_meshes():
 
     # labels
     hello_there = decimated_meshes[0].center
-    hello_again = [decimated_meshes[0].center[0] + 1, decimated_meshes[0].center[1], decimated_meshes[0].center[0]]
+    hello_again = [decimated_meshes[0].center[0] + 1, decimated_meshes[0].center[1], decimated_meshes[0].center[2]]
     label_coordinates.append(hello_there)
     label_coordinates.append(hello_again)
     label_names.append('Hello there!')
@@ -307,8 +317,7 @@ class Window(QtWidgets.QMainWindow):
         self.plotter.add_key_event('F6', self.view_back)
         self.plotter.add_key_event('F7', self.view_front)
 
-        self.plotter.add_key_event('m', self.add_arc)
-        self.plotter.add_key_event('l', self.add_cut)
+        self.plotter.add_key_event('l', self.example_surface_cut)
 
         self.plotter.add_key_event('j', self.interaction_mode)
 
@@ -354,12 +363,8 @@ class Window(QtWidgets.QMainWindow):
     ********************
     '''
 
-    def add_arc(self):
-        pass
-        # plotted_arc.append(arc)
-
-    def add_cut(self):
-        self.plotter.remove_actor(excavation_layers.keys())
+    def example_surface_cut(self):
+        self.clear_tool(use='excavation_tool')
 
         arc = pv.CircularArc([0, -4, -1], [0, 4, -1], [0, 0, -1])
         arc = arc.extrude([0, 0, 2], inplace=True)
@@ -367,13 +372,20 @@ class Window(QtWidgets.QMainWindow):
         poly_arc = pv.PolyData(arc)
 
         mesh = decimated_meshes[0]
-
-        # print('arc: ', arc)
-        # print('decimated_mesh: ', decimated_meshes[0])
+        label = [decimated_meshes[0].center[0] + 3, decimated_meshes[0].center[1] + 3, decimated_meshes[0].center[2]]
+        poly_label = pv.PolyData(label)
 
         clip = mesh.clip_surface(poly_arc)
+        print(label)
+        print(poly_label.points)
+        clip2 = poly_label.clip_surface(poly_arc)
+        if clip2.number_of_points > 0:
+            self.plotter.add_point_labels(points=poly_label.points, labels=['Hello there, again'], point_size=20,
+                                          font_size=36, name='label_12', reset_camera=False)
+        print(clip2)
         self.plotter.add_mesh(poly_arc, style='wireframe', show_scalar_bar=False)
-        self.plotter.add_mesh(clip, texture=textures[0])
+        self.plotter.add_mesh(clip, color='blue')
+        self.plotter.show_grid()
 
     # shows the element and adds a new spacer_item
     def show_checkbox(self, pos):
@@ -514,13 +526,10 @@ class Window(QtWidgets.QMainWindow):
             if self.segmentation_tool_textures.isChecked() and segmentation_semaphor[0] != 0:
                 segmentation_semaphor[0] = 0
                 self.clear_tool(use='segmentation_tool', tex_or_col='tex')
-                self.plotter.add_plane_widget(clip_mesh)
             elif self.segmentation_tool_color.isChecked() and segmentation_semaphor[0] != 1:
                 segmentation_semaphor[0] = 1
                 self.clear_tool(use='segmentation_tool', tex_or_col='col')
-                self.plotter.add_plane_widget(clip_mesh)
-            else:
-                self.plotter.add_plane_widget(clip_mesh)
+            self.plotter.add_plane_widget(clip_mesh, normal_rotation=False)
         else:
             self.check_labels()
             dummy_semaphore[0] = 1
@@ -590,7 +599,7 @@ class Window(QtWidgets.QMainWindow):
                     self.extraction_tool_textures.setChecked(False)
                 self.plotter.clear_box_widgets()
 
-    # segmentation_extraction
+    # clipping
     def clipping(self, use: str, param: []):
         colors = ['blue', 'green', 'red', 'yellow']
 
@@ -603,8 +612,6 @@ class Window(QtWidgets.QMainWindow):
                 clipped_layers[name] = elem.clip(normal=param[0], origin=param[1], inplace=False)
             elif use == 'extraction':
                 clipped_layers[name] = elem.clip_box(param[0].bounds, invert=False)
-
-        print(clipped_layers)
 
         if extraction_semaphor[0] == 0 or segmentation_semaphor[0] == 0:
             for tex, name in zip(textures, clipped_layers.keys()):

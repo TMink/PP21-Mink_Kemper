@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------
+# Created By  : Tobias Mink, Marvin Kemper
+# ---------------------------------------------------------------------------
+"""  """
+# ---------------------------------------------------------------------------
 import shutil
 from app_functions.search_for_format import search_for_format
 
@@ -22,7 +27,7 @@ def utm_to_shift():
 
         # copy all non .obj files
         for elem in new_rest:
-                shutil.copyfile(UTM_PATH + elem, SHIFT_PATH + elem)
+            shutil.copyfile(UTM_PATH + elem, SHIFT_PATH + elem)
 
         # global shift all .obj files
         for utm_elem in new_obj:
