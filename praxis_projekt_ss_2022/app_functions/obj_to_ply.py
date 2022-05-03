@@ -24,14 +24,19 @@ def oby_to_ply():
     new_obj = [elem for elem in obj_list if elem not in ply_list]
     new_rest = [elem for elem in obj_rest_list if elem not in ply_rest_list]
 
+    # copy all .obj files
     if new_obj:
         print('New files:')
+        for elem in new_obj:
+            print(elem)
+            ms.load_new_mesh(OBJ_PATH + elem + '.obj')
+            ms.save_current_mesh(PLY_PATH + elem + '.ply')
 
     # copy all non .obj files
     for elem in new_rest:
-        shutil.copyfile(OBJ_PATH + elem, PLY_PATH + elem)
+        try:
+            shutil.copyfile(OBJ_PATH + elem, PLY_PATH + elem)
+        except OSError:
+            print(f'cannot copy {elem} from {OBJ_PATH} to {PLY_PATH}')
 
-    for elem in new_obj:
-        print(elem)
-        ms.load_new_mesh(OBJ_PATH + elem + '.obj')
-        ms.save_current_mesh(PLY_PATH + elem + '.ply')
+

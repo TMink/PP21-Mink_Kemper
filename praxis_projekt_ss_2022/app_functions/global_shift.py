@@ -11,6 +11,7 @@ SHIFT_PATH = 'resources/models/shift_coords/obj_format/'
 
 
 def utm_to_shift():
+    global shift, utm
     decimal_places = 6
 
     # list the current items in specific format
@@ -27,18 +28,27 @@ def utm_to_shift():
 
         # copy all non .obj files
         for elem in new_rest:
-            shutil.copyfile(UTM_PATH + elem, SHIFT_PATH + elem)
+            try:
+                shutil.copyfile(UTM_PATH + elem, SHIFT_PATH + elem)
+            except OSError:
+                print(f'cannot copy {elem} from {UTM_PATH} to {SHIFT_PATH}')
 
         # global shift all .obj files
         for utm_elem in new_obj:
-            utm = open(UTM_PATH + utm_elem, 'r')
-            shift = open(SHIFT_PATH + utm_elem, 'w')
-            count = 0
+            try:
+                utm = open(UTM_PATH + utm_elem, 'r')
+            except OSError:
+                print(f'cannot open {utm_elem} from {UTM_PATH}')
+
+            try:
+                shift = open(SHIFT_PATH + utm_elem, 'w')
+            except OSError:
+                print(f'cannot open {utm_elem} from {SHIFT_PATH}')
+
             for line in utm:
                 if line.startswith('#'):
                     shift.write("# Shift Coords")
                 if line.startswith('v '):
-                    count += 1
                     groups = line.split(" ")
                     new_X = round(((float(groups[1]) / 100) - int(float(groups[1]) / 100)) * 100, decimal_places)
                     new_Y = round(((float(groups[2]) / 100) - int(float(groups[2]) / 100)) * 100, decimal_places)

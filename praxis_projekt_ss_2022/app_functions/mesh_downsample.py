@@ -9,6 +9,8 @@ import pymeshlab as ml
 
 PLY_PATH = 'resources/models/shift_coords/ply_format/'
 DECIMATED_PLY_PATH = 'resources/models/shift_coords/ply_format/decimated/'
+
+# Maximum triangles of the decimated mesh
 TARGET = 100000
 
 ms = ml.MeshSet()
@@ -23,8 +25,12 @@ def decimate_meshes():
     new_ply_list = [elem for elem in ply_list if elem not in decimated_ply_list]
     new_rest_list = [elem for elem in ply_rest_list if elem not in decimated_ply_rest_list]
 
+    # copy all non .ply files
     for elem in new_rest_list:
-        shutil.copyfile(PLY_PATH + elem, DECIMATED_PLY_PATH + elem)
+        try:
+            shutil.copyfile(PLY_PATH + elem, DECIMATED_PLY_PATH + elem)
+        except OSError:
+            print(f'cannot copy {elem} from {PLY_PATH} to {DECIMATED_PLY_PATH}')
 
     for elem in new_ply_list:
         ms.load_new_mesh(PLY_PATH + elem)
