@@ -17,43 +17,75 @@ class DecimatedMeshes(dict):
         dict.__setitem__(self, key, value)
 
 
-# dict with 'label_name : plotted_label' ( str : VTK )
-# example -> 'label_name : self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key], point_size=20,
-#                                                     font_size=36, name='label_name', reset_camera=False)
-decimated_meshes = DecimatedMeshes()
+# original_layers_name(str) : original_layers.ply(PolyData)
+# layers of the excavation side, before they are decimated
+original_layers = {}
 
-# dict with 'layer_name : plotted layer' ( str : VTK )
-# example -> 'layer_name' : self.plotter.add_mesh(mesh=decimated_mesh[0], name='layer_name', texture=textures[0])
+# decimated_layer_name(str) : decimated_layer.ply(PolyDat)
+# layers of the excavation side, which are already decimated
+decimated_layers = DecimatedMeshes()
+
+# excavation_layers_name(str) : excavation_layers_plotted(VTK)
+# plotted layers of the excavation side
 excavation_layers = {}
 
-# dict with 'clipped_layer_name : plotted_clipped_layer' ( str : VTK )
-# example -> 'clipped_layer_name' : self.plotter.add_mesh(mesh=clipped_meshes[0], texture=textures[0],
-#                                                      name='clipped_layer_name', show_scalar_bar=False,
-#                                                      reset_camera=False)
-# If used in segmentation tool: plotted_clipped_layer == PolyData
-# If used in extraction tool  : plotted_clipped_layer == UnstructuredGrid
-clipped_layers_seg_ex = {}
+# segmentation_extraction_layers_name(str) : segmentation_extraction_layers(VTK)
+# clipped and plotted layers of the segmentation/extraction tool
+segmentation_extraction_layers = {}
 
-# dict with 'label_name : plotted_label' ( str : VTK )
-# example -> 'label_name : self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key], point_size=20,
-#                                                     font_size=36, name='label_name', reset_camera=False)
-labels = {}
+# segmentation_tool: clipped_layer_name : clipped_layers_seg_ex.ply(PolyData)
+# extraction_tool: clipped_layer_name : clipped_layers_seg_ex.ply(UnstructuredGrid)
+# clipped layers, used from segemntation_tool/extraction_tool. Type depends of tool
+segmentation_extraction_clipped_layers = {}
 
-# dict with 'object_name : plotted object' ( str : VTK )
-# example ->
-interaction_objects = {}
+# shapefiles_name(str) : shapefiles.ply(PolyData)
+# shape files
+shapefiles = {}
 
-# dict with 'checkbox_name : label_name' ( str :  )
-# example -> 'label_name : self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key], point_size=20,
-#
-labels_checkboxes = {}
+# shapefiles_layers_name : shypefiles_layers(VTK)
+# plotted shapefiles
+shapefiles_layers = {}
 
-# dict with 'checkbox_name : checkbox' ( str :  )
-# example -> 'label_name : self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key], point_size=20,
-#
+# checkbox_name : checkbox'
+# clipped and plotted shapefiles
+shapefiles_clipped_layers = {}
+
+# interactable_objects_name(str) : interactable_objects.ply(PolyData)
+# interactable objects
+interactable_objects = {}
+
+# interactable_objects_name(str) : interactable_objects.ply(PolyData)
+# interactable objects, which are in the scene and not yet plotted
+interactable_objects_loaded = {}
+
+# interactable_objects_name : interactable_objects(VTK)
+# plotted interactable objects
+interactable_objects_plotted = {}
+
+# found_name(str) : found_plotted(VTK)
+# founds
+founds = {}
+
+# checkbox_name(str) : found_name(str)
+# corresponding names of checkbox and found
+founds_checkboxes = {}
+
+# checkbox_name : checkbox
+# check box
 check_boxes = {}
 
-# dict with 'checkbox_name : checkbox' ( str :  )
-# example -> 'label_name : self.plotter.add_point_labels(points=[visible_labels[key]], labels=[key], point_size=20,
-#
-clipped_layers_shp = {}
+# dummy_layer_name(str) : decimated_layer(VTK)
+# first layer of decimated_layers
+dummy_layer = {}
+
+# interactable_objects_name(str) : QPushButton
+# button of existing interactable objects, that could be loaded in the scene
+buttons_not_in_plot = {}
+
+# interactable_objects_name(str) : QPushButton
+# button of interactable objects, that are loaded in the scene
+buttons_in_plot = {}
+
+geotiff_bounds = {}
+
+old_utm_coords = {}
