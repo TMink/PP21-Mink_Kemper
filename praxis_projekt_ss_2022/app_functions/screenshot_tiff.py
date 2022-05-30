@@ -11,9 +11,10 @@ from data.lists import textures, colors, camera_vector, camera_view
 
 pv.global_theme.transparent_background = True
 pv.rcParams['transparent_background'] = True
+plotter = pv.Plotter(window_size=[1920, 1080], off_screen=False) # Full-HD
 # plotter = pv.Plotter(window_size=[3840, 2160], off_screen=True) # 4k
 # plotter = pv.Plotter(window_size=[7680, 4320], off_screen=True) # 8k
-plotter = pv.Plotter(window_size=[15360, 8640], off_screen=True) # 16k
+# plotter = pv.Plotter(window_size=[15360, 8640], off_screen=False) # 16k
 # plotter = pv.Plotter(window_size=[30720, 17280], off_screen=True) # 32k
 
 
@@ -53,7 +54,8 @@ def take_screenshot(tool_name: str, tex_col: str):
     change_camera()
     # plotter.screenshot(filename=f'resources/tif/tif_image_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.tiff',
     #                   transparent_background=True)
-    plotter.screenshot(filename=f'resources/screenshots/tiff/tif_image.tiff', transparent_background=True)
+    #plotter.screenshot(filename=f'resources/screenshots/tiff/tif_image.tiff', transparent_background=True)
+    plotter.show()
 
 
 def lets_try():
@@ -134,3 +136,7 @@ def change_camera():
     geotiff_bounds['bottom'] = reference_plane.bounds[test[1]]
     geotiff_bounds['left'] = reference_plane.bounds[test[3]]
     geotiff_bounds['right'] = reference_plane.bounds[test[2]]
+
+    #plotter.add_mesh(mesh=frustum, color='red', style='wireframe')
+    #plotter.add_mesh(mesh=plane, color='blue')
+    #plotter.add_mesh(mesh=reference_plane, color='green')

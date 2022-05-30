@@ -1,2 +1,2 @@
-background-color: white;
-border: 5px solid grey;
+background-color: #E69F56;
+border: 3px solid grey;

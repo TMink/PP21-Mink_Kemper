@@ -1,2 +1,2 @@
-background-color:white;
-border: 10px solid grey;
+background-color: white;
+border: 6px solid grey;

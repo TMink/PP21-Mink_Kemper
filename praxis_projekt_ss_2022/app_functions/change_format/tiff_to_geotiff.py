@@ -4,18 +4,10 @@
 """  """
 # ---------------------------------------------------------------------------
 import subprocess
-import glob
 
 from app_functions.search_for_format import search_for_format
 from data.dictionarys import geotiff_bounds
 from data.lists import camera_view
-
-#TIFF_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/' \
-#            'resources/screenshots/tiff/'
-#GEOTIFF_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/' \
-#               'resources/screenshots/geotiff/'
-#COORDS_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/' \
-#              'database/utm_coords'
 
 TIFF_PATH = 'resources/screenshots/tiff/'
 GEOTIFF_PATH = 'resources/screenshots/geotiff/'
