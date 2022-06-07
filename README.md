@@ -1,5 +1,4 @@
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
-# PP21-Mink_Kemper
+![This is an image](praxis_projekt_ss_2022/resources/assets/logo.png)
 
 ## Abstract
 Während einer Ausgrabung werden sequentiell Schichten einer Fundstelle entfernt, um die darunter liegenden Erdschichten oder Gegenstände freizulegen. Jeder dieser Arbeitsschritte sorgt dafür, dass ein irreparabeler Schaden entsteht, welcher nicht rückwirkend aufgebessert werden kann. Um diesem Verlust zuvor zu kommen, werden Technologien wie Drohnen eingesetzt, um einen Scan des aktuellen Stands der Ausgrabung festzuhalten. Die daraus entstehenden Daten können durch den Einsatz von spezieller Software, bearbeitet und ausgewertet werden. Das Projekt baut auf einem, abgeschlossenen Master Projekt auf. Damals war es das Ziel, ein digitales Feldbuch zu entwicklen, welches allerdings zur Fertigstellung nicht die Möglichkeit bot, eingehende Daten im dreidimensionalem Raum zu bearbeiten.
