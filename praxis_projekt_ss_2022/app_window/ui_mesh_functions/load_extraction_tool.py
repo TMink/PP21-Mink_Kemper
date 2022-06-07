@@ -4,7 +4,7 @@
 """  """
 # ---------------------------------------------------------------------------
 from data.dictionarys import excavation_layers, shapefiles_layers, dummy_layer, segmentation_extraction_layers, \
-    shapefiles_selected_for_clipping, shapefiles_colors_actual, shapefiles_clipped_and_subdivided_layers
+    shapefiles_clipped_and_subdivided_layers
 from data.lists import excavation_semaphor, shapefile_semaphor, dummy_semaphore, segmentation_semaphor, \
     extraction_semaphor
 

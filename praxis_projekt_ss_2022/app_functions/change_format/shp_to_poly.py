@@ -3,24 +3,16 @@
 # ---------------------------------------------------------------------------
 """  """
 # ---------------------------------------------------------------------------
-import itertools
 import shutil
 
 import numpy as np
-import pyvista as pv
 import geopandas as gpd
-import requests
-from pyacvd import Clustering
 
 from shapely import speedups
 
 from app_functions.general.search_for_format import search_for_format
 
 import pyvista as pv
-
-from app_functions.get_data import get_meshes, get_textures
-from data.dictionarys import original_layers
-from data.lists import textures
 
 speedups.disable()
 

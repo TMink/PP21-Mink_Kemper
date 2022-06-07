@@ -3,8 +3,6 @@
 # ---------------------------------------------------------------------------
 """  """
 # ---------------------------------------------------------------------------
-from PyQt5.QtCore import Qt
-
 from data.dictionarys import excavation_layers, segmentation_extraction_clipped_layers, \
     segmentation_extraction_layers, shapefiles_layers, shapefiles, shapefiles_clipped_and_subdivided_layers, \
     shapefiles_selected_for_clipping, shapefiles_colors_actual, shapefiles_checkboxes, founds

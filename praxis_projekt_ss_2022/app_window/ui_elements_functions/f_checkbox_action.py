@@ -6,7 +6,6 @@
 from PyQt5.QtCore import Qt
 
 from app_functions.general import change_found_color
-from data.lists import colored_founds
 
 
 def do(self, state=None):

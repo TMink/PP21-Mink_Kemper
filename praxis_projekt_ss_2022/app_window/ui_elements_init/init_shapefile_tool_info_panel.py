@@ -3,10 +3,8 @@
 # ---------------------------------------------------------------------------
 """  """
 # ---------------------------------------------------------------------------
-import re
 
 from PyQt5 import QtCore
-from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QCheckBox
 
 from data.dictionarys import shapefiles, shapefiles_checkboxes
