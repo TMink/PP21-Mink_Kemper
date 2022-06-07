@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Gets all .ply-files from ply_path and saves them temporarily in mesh_dict.
+"""
 # ---------------------------------------------------------------------------
 import pyvista as pv
 from app_functions.general.search_for_format import search_for_format

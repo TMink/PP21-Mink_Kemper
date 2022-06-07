@@ -1,7 +1,15 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Converts every new shp files into PolyData-Objects
+
+-1- Get all files (.shp, .cpg, .dbf, .prj, .sbn, .sbx, .shx, .sr) from shp_path and vtk_path
+-2- Looks if files are already present in vtk_path
+-3- Copy all non .obj files into ply_path
+-4- Convert .shp-files into .vtk-files, shift the cords, attach an index value polygons and save those polygons into
+    vtk_path
+"""
 # ---------------------------------------------------------------------------
 import shutil
 
@@ -16,39 +24,51 @@ import pyvista as pv
 
 speedups.disable()
 
-SHP_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/shapefiles/shp/'
-VTK_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/shapefiles/vtk/'
+SHP_PATH = \
+    'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/' \
+    'shapefiles/shp/'
+VTK_PATH = \
+    'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/' \
+    'shapefiles/vtk/'
 
-PLY_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/excavation_layers/layers_shift/ply/'
-JPG_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/excavation_layers/layers_shift/ply/decimated_layers/'
+PLY_PATH = \
+    'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/' \
+    'excavation_layers/layers_shift/ply/'
+JPG_PATH = \
+    'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/' \
+    'excavation_layers/layers_shift/ply/decimated_layers/'
 
-SUB_PATH = 'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/subdivided_meshes/'
+SUB_PATH = \
+    'C:/Users/Tobias/Desktop/Praxisprojekt SS2022/New/PP21-Mink_Kemper/praxis_projekt_ss_2022/resources/models/' \
+    'subdivided_meshes/'
 
 
 def do(shp_path: str, vtk_path: str):
-    # list the current items in specific format
+    # -1-
     shp_list = search_for_format(path=shp_path, format_type=['shp'], cut=True, exceptions=['sr', 'xml'])
     shp_rest_list = search_for_format(path=shp_path,
-                                      format_type=['cpg', 'dbf', 'prj', 'sbn', 'sbx', 'shp', 'shx', 'sr'], cut=False)
+                                      format_type=['cpg', 'dbf', 'prj', 'sbn', 'sbx', 'shx', 'sr'], cut=False)
     vtk_list = search_for_format(path=vtk_path, format_type=['vtk'], cut=True)
     vtk_rest_list = search_for_format(path=vtk_path,
-                                      format_type=['cpg', 'dbf', 'prj', 'sbn', 'sbx', 'shp', 'shx', 'sr'], cut=False)
+                                      format_type=['cpg', 'dbf', 'prj', 'sbn', 'sbx', 'shx', 'sr'], cut=False)
 
+    # cut the index of every vtk for comparison
     for idx, elem in enumerate(vtk_list):
         if elem.rfind('_'):
             vtk_list[idx] = elem[:elem.rfind('_')]
 
-    # list every new item, that isn't already processed
+    # -2-
     new_shp = [elem for elem in shp_list if elem not in vtk_list]
     new_rest = [elem for elem in shp_rest_list if elem not in vtk_rest_list]
 
-    # copy all non .shp files
+    # -3-
     for elem in new_rest:
         try:
             shutil.copyfile(shp_path + elem, vtk_path + elem)
         except OSError:
             print(f'cannot copy {elem} from {shp_path} to {vtk_path}')
 
+    # -4-
     if new_shp:
         print('New Files:')
         for elem in new_shp:
@@ -84,9 +104,8 @@ def do(shp_path: str, vtk_path: str):
                 line_point_array = np.array(line_point_sec)
 
                 partial_poly_ugrid = pv.UnstructuredGrid(cell_sec_array, cell_type_array, line_point_array)
-                # we can add some values to the point
-                # partial_poly_ugrid.cell_arrays["Elev"] = values.Elev
                 unstructured_grids[str(index)] = partial_poly_ugrid
 
+            # save the polygon with index as vtk
             for idx, value in enumerate(unstructured_grids.values()):
                 value.save(VTK_PATH + f'{elem}_{idx}.vtk', binary=False)

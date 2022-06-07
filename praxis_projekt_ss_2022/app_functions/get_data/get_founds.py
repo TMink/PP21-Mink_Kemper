@@ -1,7 +1,10 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Gets all data relatet to 'founds' and saves them into cords and names. At the moment there are only examples of
+possible data.
+"""
 # ---------------------------------------------------------------------------
 
 

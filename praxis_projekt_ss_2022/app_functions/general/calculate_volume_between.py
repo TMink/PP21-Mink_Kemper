@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Calculates the volume between two given surfaces
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import original_layers
 from data.lists import volume

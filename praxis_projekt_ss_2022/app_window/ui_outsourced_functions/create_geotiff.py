@@ -1,11 +1,13 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Creates a GeoTiff
+"""
 # ---------------------------------------------------------------------------
 import rasterio.plot
 
-from app_functions.change_format.tiff_to_geotiff import tiff_to_geotiff
+from app_functions.change_format import tiff_to_geotiff
 from app_functions.general import screenshot_tiff
 from data.dictionarys import excavation_layers, segmentation_extraction_layers, shapefiles_layers
 from data.lists import camera_view
@@ -36,7 +38,7 @@ def do(self, res: list):
     if camera_view[0] != 'isometric':
         screenshot_tiff.do(tool_name=tool_name, tex_col=tex_col, res=res)
 
-        tiff_to_geotiff()
+        tiff_to_geotiff.do()
 
         data_name = 'resources/screenshots/geotiff/tif_image.tiff'
         tiff = rasterio.open(data_name)

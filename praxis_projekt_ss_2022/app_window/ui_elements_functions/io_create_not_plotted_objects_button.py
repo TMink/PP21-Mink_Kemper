@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Creates a new interaction object in plot
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import interaction_objects, interaction_objects_plotted, interaction_objects_loaded
 from data.lists import button_selected

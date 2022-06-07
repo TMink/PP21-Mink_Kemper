@@ -1,13 +1,10 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Temporary data.
+"""
 # ---------------------------------------------------------------------------
-# lists of actor names (str)
-interaction_actors = []
-
-# lists of plotted meshes (VTK)
-plotted_interaction_actors = []
 
 # semaphores
 excavation_semaphor = [2]
@@ -22,9 +19,6 @@ textures = []
 found_coordinates = []
 found_names = []
 
-# testing
-plotted_arc = []
-
 colored_founds = []
 
 volume = []
@@ -32,9 +26,6 @@ volume = []
 colors = ['blue', 'green', 'red', 'yellow', 'purple']
 
 button_selected = ['_']
-button_selected_for_deletion = ['_']
-
-testing_things = [0]
 
 clicked = [0]
 
@@ -45,5 +36,3 @@ clicked_somewhere_else = [0]
 camera_vector = [0, 0]
 
 camera_view = ['isometric']
-
-center_coords = []

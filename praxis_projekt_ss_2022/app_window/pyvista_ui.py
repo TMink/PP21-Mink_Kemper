@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Window and LoadingScreen Classes.
+"""
 # ---------------------------------------------------------------------------
 import sys
 import os
@@ -21,8 +23,8 @@ from app_window.ui_elements_functions import f_checkbox_action, \
     io_info_panel_hide_show, io_object_view_mode_button, sf_info_panel_hide_show, sf_load_button, sf_checkbox_action, \
     sf_checkbox_hide, sf_checkbox_show
 
-from app_window.ui_mesh_functions import load_interaction_mesh, load_excavation_side, load_segmentation_tool, \
-    load_extraction_tool, load_shapefile_tool
+from app_window.ui_mesh_functions import load_excavation_side, load_segmentation_tool, load_extraction_tool, \
+    load_shapefile_tool
 
 from app_window.ui_outsourced_functions import build_legend, clipping, build_founds, build_dummy_object, clear_tool, \
     check_founds, callback, check_clicked_tracked, create_geotiff, update_window_height, loading_tasks_and_screen
@@ -45,7 +47,6 @@ class LoadingScreen(QWidget):
         self.n = 100
 
         self.frame = QFrame()
-        #self.myApp = Window()
         self.system_name = QLabel(self.frame)
         self.current_task = QLabel(self.frame)
         self.progressbar = QProgressBar(self.frame)
@@ -355,9 +356,6 @@ class Window(QMainWindow):
 
     def load_extraction_tool(self, state):
         load_extraction_tool.do(self, state)
-
-    def load_interaction_mesh(self):
-        load_interaction_mesh.do(self)
 
     def load_segmentation_tool(self, state):
         load_segmentation_tool.do(self, state)

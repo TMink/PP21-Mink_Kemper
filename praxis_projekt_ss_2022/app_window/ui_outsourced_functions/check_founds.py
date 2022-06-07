@@ -1,7 +1,10 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Checks, if founds should be visible in plot. If the mesh is clipped, every founds which are not in the extant part of
+the mesh are deleted from the plot.
+"""
 # ---------------------------------------------------------------------------
 import pyvista as pv
 

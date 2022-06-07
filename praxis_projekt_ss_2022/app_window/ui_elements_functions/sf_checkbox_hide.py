@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Hides the checkbox, if corresponding found is not in plot.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import shapefiles_checkboxes
 

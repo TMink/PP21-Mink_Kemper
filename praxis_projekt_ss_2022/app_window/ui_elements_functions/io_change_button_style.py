@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Changes the style of buttons if they are selected
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import buttons_not_in_plot, interaction_objects_loaded, interaction_objects, buttons_in_plot
 from data.lists import button_selected

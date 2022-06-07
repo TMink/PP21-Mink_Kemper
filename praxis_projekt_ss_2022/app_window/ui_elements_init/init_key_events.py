@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Key events
+"""
 # ---------------------------------------------------------------------------
 
 
@@ -13,5 +15,3 @@ def do(self):
     self.plotter.add_key_event('F5', self.view_right)
     self.plotter.add_key_event('F6', self.view_front)
     self.plotter.add_key_event('F7', self.view_back)
-
-    self.plotter.add_key_event('k', self.create_geotiff)

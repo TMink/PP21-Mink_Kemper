@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Change the color of found labels, if the corresponding checkbox is clicked
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import check_boxes, founds_checkboxes
 from data.lists import colored_founds

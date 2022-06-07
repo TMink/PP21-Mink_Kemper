@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Loads every polygon from shapefiles into the plot.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import excavation_layers, segmentation_extraction_clipped_layers, \
     segmentation_extraction_layers, shapefiles_layers, shapefiles, shapefiles_clipped_and_subdivided_layers, \

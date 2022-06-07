@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Sows and hides given founds in plot, if any mesh is plotted.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import excavation_layers, segmentation_extraction_clipped_layers, shapefiles_layers, \
     shapefiles_clipped_layers, founds

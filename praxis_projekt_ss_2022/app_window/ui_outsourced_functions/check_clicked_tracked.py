@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Tracks the clicked position of the mouse inside the plotter window.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import buttons_in_plot, interaction_objects_loaded, interaction_objects
 from data.lists import clicked_somewhere_else, clicked, clicked_tracked, button_selected

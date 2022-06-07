@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Loads every mesh from original_layers into the plot.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import dummy_layer, excavation_layers, segmentation_extraction_clipped_layers, \
     segmentation_extraction_layers, shapefiles_layers, original_layers, shapefiles_clipped_and_subdivided_layers

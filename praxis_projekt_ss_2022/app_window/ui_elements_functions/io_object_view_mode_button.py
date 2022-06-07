@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Changes the interaction-style of the plotter.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import interaction_objects, interaction_objects_plotted, excavation_layers
 from data.lists import interaction_style

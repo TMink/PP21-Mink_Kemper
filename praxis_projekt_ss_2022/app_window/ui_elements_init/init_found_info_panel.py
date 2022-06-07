@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Info panel: found
+"""
 # ---------------------------------------------------------------------------
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont
@@ -21,7 +23,7 @@ def do(self):
     self.found_label.setFixedWidth(500)
     self.found_label.hide()
 
-    # checkbox
+    # create a checkbox for every found
     for i in range(0, len(found_coordinates)):
         checkbox = QCheckBox(found_names[i])
         checkbox.setObjectName(f'checkbox_{i}')

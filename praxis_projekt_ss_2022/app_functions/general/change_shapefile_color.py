@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Change the color of the shapefile, if the corresponding checkbox is clicked
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import shapefiles_checkboxes, shapefiles_layers, shapefiles, shapefiles_colors, \
     shapefiles_colors_actual, shapefiles_selected_for_clipping, shapefiles_clipped_and_subdivided_layers

@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Shows the checkbox, if corresponding found is in plot.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import shapefiles_checkboxes
 

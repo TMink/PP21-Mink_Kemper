@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Clips the mesh and loads the new mesh into the plot
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import segmentation_extraction_clipped_layers, original_layers, segmentation_extraction_layers
 from data.lists import camera_vector, extraction_semaphor, segmentation_semaphor, textures, colors

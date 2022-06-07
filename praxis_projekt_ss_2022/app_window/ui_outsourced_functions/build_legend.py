@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Creates a legend which holds metadata corresponding to the colors of the mesh.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import original_layers
 from data.lists import colors

@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Loads a dummy object in plot, which some other functions depend on.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import dummy_layer, original_layers
 

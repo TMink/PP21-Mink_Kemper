@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Translates all .obj-files to the center of the first original_layer
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import original_layers
 

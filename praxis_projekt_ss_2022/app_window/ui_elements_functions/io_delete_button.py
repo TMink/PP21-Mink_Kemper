@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Removes the interaction object in plot and the corresponding button.
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import interaction_objects_plotted, buttons_in_plot
 from data.lists import button_selected

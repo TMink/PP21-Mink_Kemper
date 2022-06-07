@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Callback
+"""
 # ---------------------------------------------------------------------------
 from data.dictionarys import interaction_objects, buttons_in_plot
 from data.lists import clicked

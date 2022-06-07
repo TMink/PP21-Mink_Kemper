@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------------
 # Created By  : Tobias Mink, Marvin Kemper
 # ---------------------------------------------------------------------------
-"""  """
+"""
+Temporary data.
+"""
 # ---------------------------------------------------------------------------
 
 import pyvista as pv
@@ -23,7 +25,7 @@ original_layers = OriginalMeshes()
 
 # decimated_layer_name(str) : decimated_layer.ply(PolyDat)
 # layers of the excavation side, which are already decimated
-#decimated_layers = DecimatedMeshes()
+# decimated_layers = DecimatedMeshes()
 
 # excavation_layers_name(str) : excavation_layers_plotted(VTK)
 # plotted layers of the excavation side
@@ -122,5 +124,3 @@ buttons_not_in_plot = {}
 buttons_in_plot = {}
 
 geotiff_bounds = {}
-
-old_utm_coords = {}
