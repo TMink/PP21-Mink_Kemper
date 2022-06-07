@@ -27,7 +27,7 @@ Das Ergebnis stellt eine 3D-Anwendungssoftware dar, welche es ermöglicht, einko
 - re
 - mathplotlib
 - functools
-- rasterio
+- rasterio (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#rasterio)
 - time
-- fiona (https://www.lfd.uci.edu/~gohlke/pythonlibs/#fiona)
-- gdal
+- fiona (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#fiona)
+- gdal (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal)
