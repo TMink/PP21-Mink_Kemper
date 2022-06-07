@@ -1,4 +1,4 @@
-![This is an image](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true](https://github.com/mkemper1/PP21-Mink_Kemper/blob/main/praxis_projekt_ss_2022/resources/assets/logo.png)
+![This is an image](https://../logo.png)
 
 # PP21-Mink_Kemper
 
