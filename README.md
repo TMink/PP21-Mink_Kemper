@@ -1,4 +1,4 @@
-![This is an image](master/logo.png)
+![This is an image](praxis_projekt_ss_2022/resources/assets/logo.png)
 
 # PP21-Mink_Kemper
 
