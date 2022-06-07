@@ -1,4 +1,4 @@
-![This is an image](https://../logo.png)
+![This is an image](master/logo.png)
 
 # PP21-Mink_Kemper
 
