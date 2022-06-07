@@ -31,3 +31,6 @@ Das Ergebnis stellt eine 3D-Anwendungssoftware dar, welche es ermöglicht, einko
 - gdal (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal)
 - rasterio (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#rasterio)
 - geopandas
+
+## Bemerkung
+Aufgrund von Datenschutz können Datensätze der Ausgrabung nicht in diesem Repository hinterlegt werden.
