@@ -3,10 +3,10 @@
 # ---------------------------------------------------------------------------
 """  """
 # ---------------------------------------------------------------------------
-from data.dictionarys import decimated_layers
+from data.dictionarys import original_layers
 
 
-# translates to the center of the first layer in decimated_layers
+# translates to the center of the first layer in original_layers
 def do(data: list):
     for elem in data:
-        elem.translate(next(iter(decimated_layers.items()))[1].center, inplace=True)
+        elem.translate(next(iter(original_layers.items()))[1].center, inplace=True)

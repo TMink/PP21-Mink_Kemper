@@ -78,24 +78,19 @@ def do(self):
     self.shapefile_menu.setStyleSheet(
         open('resources/style_sheets/main_menu_style_sheet.txt').read().replace('\n', ''))
 
-    self.shapefile_tool_texture.setStatusTip('With textures')
-    self.shapefile_tool_texture.setChecked(False)
-    self.shapefile_tool_texture.triggered.connect(self.load_shapefile_tool)
-
-    self.shapefile_tool_color.setStatusTip('With color')
-    self.shapefile_tool_color.setChecked(False)
-    self.shapefile_tool_color.triggered.connect(self.load_shapefile_tool)
+    self.shapefile_tool_load.setStatusTip('Load shapefiles')
+    self.shapefile_tool_load.setChecked(False)
+    self.shapefile_tool_load.triggered.connect(self.load_shapefile_tool)
 
     self.shapefile_tool_info_panel.setStatusTip('Show/Hide info panel')
     self.shapefile_tool_info_panel.setChecked(False)
     self.shapefile_tool_info_panel.triggered.connect(self.sf_info_panel_hide_show)
 
-    self.shapefile_menu.addAction(self.shapefile_tool_texture)
-    self.shapefile_menu.addAction(self.shapefile_tool_color)
+    self.shapefile_menu.addAction(self.shapefile_tool_load)
     self.shapefile_menu.addAction(self.shapefile_tool_info_panel)
     self.tools_menu.addMenu(self.shapefile_menu)
 
-    # ** Interactable Object/-s **
+    # ** Interaction Object/-s **
     self.interaction_objects_menu.setFont(QFont(FONT_NAME, 10))
 
     # * show/hide object/-s *
@@ -126,3 +121,23 @@ def do(self):
 
     self.founds_menu.addAction(self.founds_show_hide)
     self.founds_menu.addAction(self.founds_info_panel)
+
+    # ** GeoTiff Screenshot **
+    self.geotiff_menu.setFont(QFont(FONT_NAME, 10))
+
+    # * 1920_1080(Full HD) *
+    self.geotiff_1920_1080.triggered.connect(self.take_screenshot_1920_1080)
+    self.geotiff_menu.addAction(self.geotiff_1920_1080)
+
+    # * 3840_2160(4k) *
+    self.geotiff_3840_2160.triggered.connect(self.take_screenshot_3840_2160)
+    self.geotiff_menu.addAction(self.geotiff_3840_2160)
+
+    # * 7680_4320(8k) *
+    self.geotiff_7680_4320.triggered.connect(self.take_screenshot_7680_4320)
+    self.geotiff_menu.addAction(self.geotiff_7680_4320)
+
+    # * 15360_8640(16k) *
+    self.geotiff_15360_8640.triggered.connect(self.take_screenshot_15360_8640)
+    self.geotiff_menu.addAction(self.geotiff_15360_8640)
+

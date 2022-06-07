@@ -6,7 +6,7 @@
 import shutil
 import pymeshlab as ml
 
-from app_functions.search_for_format import search_for_format
+from app_functions.general.search_for_format import search_for_format
 
 # Maximum triangles of the decimated mesh
 TARGET = 100000

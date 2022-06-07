@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------------------
 
 import pyvista as pv
-from app_functions.search_for_format import search_for_format
+from app_functions.general.search_for_format import search_for_format
 
 
 def do(t_list: list, jpg_path: str):

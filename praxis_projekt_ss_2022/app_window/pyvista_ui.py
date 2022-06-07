@@ -5,28 +5,59 @@
 # ---------------------------------------------------------------------------
 import sys
 import os
-from PyQt5.QtCore import pyqtSignal
+
+from PyQt5.QtCore import pyqtSignal, QTimer, Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QFrame, QPushButton, QMainWindow, QScrollArea, QAction, QMenu, \
-    QLabel, QSpacerItem, QSizePolicy, QWidget, QGridLayout, QApplication, QGroupBox
+    QLabel, QSpacerItem, QSizePolicy, QWidget, QGridLayout, QApplication, QGroupBox, QProgressBar
 from pyvistaqt import QtInteractor
 
-from app_window.ui_elements_init import init_found_info_panel, init_interactable_objects_info_panel, \
-    init_shapefile_tool_info_panel, init_menu_bar, init_key_events
+from app_window.ui_elements_init import init_found_info_panel, init_interaction_objects_info_panel, \
+    init_shapefile_tool_info_panel, init_menu_bar, init_key_events, init_loading_screen
 
 from app_window.ui_elements_functions import f_checkbox_action, \
     f_checkbox_hide, f_checkbox_show, f_info_panel_hide_show, io_change_button_style, \
     io_create_not_plotted_objects_button, io_create_plotted_objects_button, io_delete_button, \
-    io_info_panel_hide_show, io_object_view_mode_button, sf_info_panel_hide_show
+    io_info_panel_hide_show, io_object_view_mode_button, sf_info_panel_hide_show, sf_load_button, sf_checkbox_action, \
+    sf_checkbox_hide, sf_checkbox_show
 
 from app_window.ui_mesh_functions import load_interaction_mesh, load_excavation_side, load_segmentation_tool, \
     load_extraction_tool, load_shapefile_tool
 
 from app_window.ui_outsourced_functions import build_legend, clipping, build_founds, build_dummy_object, clear_tool, \
-    check_founds, callback, check_clicked_tracked, create_geotiff, update_window_height
+    check_founds, callback, check_clicked_tracked, create_geotiff, update_window_height, loading_tasks_and_screen
 
 from data.lists import *
 
+ICON_PATH = 'resources/assets/icons8-mesh-100.png'
+
 os.environ["QT_API"] = "pyqt5"
+
+
+class LoadingScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Colonia MeshUp')
+        self.setWindowIcon(QIcon(ICON_PATH))
+        self.setFixedSize(1100, 500)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.n = 100
+
+        self.frame = QFrame()
+        #self.myApp = Window()
+        self.system_name = QLabel(self.frame)
+        self.current_task = QLabel(self.frame)
+        self.progressbar = QProgressBar(self.frame)
+        self.loading_sign = QLabel(self.frame)
+        init_loading_screen.do(self)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.loading)
+        self.timer.start(30)
+
+    def loading(self):
+        loading_tasks_and_screen.do(self, Window)
 
 
 class Window(QMainWindow):
@@ -36,6 +67,8 @@ class Window(QMainWindow):
         super(Window, self).__init__(parent=parent)
 
         # Window size
+        self.setWindowTitle('Colonia MeshUp')
+        self.setWindowIcon(QIcon(ICON_PATH))
         self.setMinimumSize(1920, 1080)
         self.resized.connect(self.update_window_height)
 
@@ -85,25 +118,25 @@ class Window(QMainWindow):
         ***                                Interaction objects info panel                                   ***
         *******************************************************************************************************
         '''
-        self.interactable_objects_create_delete_button_layout = QHBoxLayout()
-        self.interactable_objects_scroll_areas_layout = QHBoxLayout()
-        self.interactable_accessible_objects_scroll_area_layout = QGridLayout()
-        self.interactable_loaded_objects_scroll_area_layout = QGridLayout()
+        self.interaction_objects_create_delete_button_layout = QHBoxLayout()
+        self.interaction_objects_scroll_areas_layout = QHBoxLayout()
+        self.interaction_accessible_objects_scroll_area_layout = QGridLayout()
+        self.interaction_loaded_objects_scroll_area_layout = QGridLayout()
 
-        self.interactable_objects_label = QLabel()
+        self.interaction_objects_label = QLabel()
 
-        self.scroll_interactable_objects = QScrollArea()
-        self.interactable_accessible_objects_scroll_area = QScrollArea()
-        self.interactable_loaded_objects_scroll_area = QScrollArea()
+        self.scroll_interaction_objects = QScrollArea()
+        self.interaction_accessible_objects_scroll_area = QScrollArea()
+        self.interaction_loaded_objects_scroll_area = QScrollArea()
 
-        self.interactable_accessible_objects_scroll_area_widget = QWidget()
-        self.interactable_loaded_objects_scroll_area_widget = QWidget()
+        self.interaction_accessible_objects_scroll_area_widget = QWidget()
+        self.interaction_loaded_objects_scroll_area_widget = QWidget()
 
-        self.interactable_objects_object_view_mode_button = QPushButton('Object/View Mode')
-        self.interactable_objects_create_button = QPushButton('Create')
-        self.interactable_objects_delete_button = QPushButton('Delete')
+        self.interaction_objects_object_view_mode_button = QPushButton('Object/View Mode')
+        self.interaction_objects_create_button = QPushButton('Create')
+        self.interaction_objects_delete_button = QPushButton('Delete')
 
-        init_interactable_objects_info_panel.do(self)
+        init_interaction_objects_info_panel.do(self)
 
 
 
@@ -112,11 +145,13 @@ class Window(QMainWindow):
         ***                                   Shapefile Tool info panel                                     ***
         *******************************************************************************************************
         '''
-        self.shapefile_tool_layout = QVBoxLayout()
+        self.shapefile_tool_scroll_area_layout = QVBoxLayout()
 
-        self.shapefile_tool_label = QGroupBox()
+        self.shapefile_tool_scroll_area = QScrollArea()
 
-        self.volume_label = QLabel()
+        self.shapefile_tool_scroll_area_widget = QWidget()
+
+        self.shapefile_tool_load_button = QPushButton('Clip mesh')
 
         init_shapefile_tool_info_panel.do(self)
 
@@ -139,8 +174,7 @@ class Window(QMainWindow):
         ***            -> Original textures         (extraction_tool_texture)                               ***
         ***            -> Segment colors            (extraction_tool_color)                                 ***
         ***        -> Shapefile Tool                (shapefile_tool_menu)                                   ***
-        ***            -> Original textures         (shapefile_tool_texture)                                ***
-        ***            -> Segment colors            (shapefile_tool_color)                                  ***
+        ***            -> Load Shapefiles           (shapefile_tool_load)                                   ***
         ***            -> show/hide info panel      (shapefile_tool_info_panel)                             ***
         ***    -> Interaction objects               (interaction_objects_menu)                              ***
         ***        -> show/hide object/-s           (interaction_objects_show_hide)                         ***
@@ -155,6 +189,7 @@ class Window(QMainWindow):
         self.tools_menu = self.main_menu.addMenu('Tools')
         self.interaction_objects_menu = self.main_menu.addMenu('Interaction objects')
         self.founds_menu = self.main_menu.addMenu('Found/-s')
+        self.geotiff_menu = self.main_menu.addMenu('GeoTiff Screenshot')
 
         self.excavation_side_menu = QMenu('View Excavations side', self)
         self.segmentation_tool_menu = QMenu('Segmentation Tool')
@@ -168,8 +203,11 @@ class Window(QMainWindow):
         self.segmentation_tool_color = QAction('Segment colors', self, checkable=True)
         self.extraction_tool_texture = QAction('Original textures', self, checkable=True)
         self.extraction_tool_color = QAction('Segment colors', self, checkable=True)
-        self.shapefile_tool_texture = QAction('Original textures', self, checkable=True)
-        self.shapefile_tool_color = QAction('Segment colors', self, checkable=True)
+        self.shapefile_tool_load = QAction('Load shapefiles', self, checkable=True)
+        self.geotiff_1920_1080 = QAction('1920_1080(Full HD)', self)
+        self.geotiff_3840_2160 = QAction('3840_2160(4k)', self)
+        self.geotiff_7680_4320 = QAction('7680_4320(8k)', self)
+        self.geotiff_15360_8640 = QAction('15360_8640(16k)', self)
 
         self.shapefile_tool_info_panel = QAction('Info Panel', self, checkable=True)
         self.interaction_objects_info_panel = QAction('Info Panel', self, checkable=True)
@@ -218,16 +256,16 @@ class Window(QMainWindow):
 
     def view_bottom(self):
         camera_view[0] = 'bottom'
-        self.plotter.view_vector((0, 0, -1))
+        self.plotter.view_yx()
         self.plotter.camera.roll = 270.0
 
     def view_left(self):
         camera_view[0] = 'left'
-        self.plotter.view_vector((0, 1, 0))
+        self.plotter.view_vector((0, -1, 0))
 
     def view_right(self):
         camera_view[0] = 'right'
-        self.plotter.view_vector((0, -1, 0))
+        self.plotter.view_vector((0, 1, 0))
 
     def view_front(self):
         camera_view[0] = 'front'
@@ -281,6 +319,30 @@ class Window(QMainWindow):
     def sf_info_panel_hide_show(self):
         sf_info_panel_hide_show.do(self)
 
+    def sf_load_button(self):
+        sf_load_button.do(self)
+
+    def sf_checkbox_action(self, state):
+        sf_checkbox_action.do(self, state)
+
+    def sf_checkbox_hide(self, pos):
+        sf_checkbox_hide.do(pos)
+
+    def sf_checkbox_show(self, pos):
+        sf_checkbox_show.do(self, pos)
+
+    def take_screenshot_1920_1080(self):
+        create_geotiff.do(self, res=[1920, 1080])
+
+    def take_screenshot_3840_2160(self):
+        create_geotiff.do(self, res=[3840, 2160])
+
+    def take_screenshot_7680_4320(self):
+        create_geotiff.do(self, res=[7680, 4320])
+
+    def take_screenshot_15360_8640(self):
+        create_geotiff.do(self, res=[15360, 8640])
+
 
 
     '''
@@ -325,8 +387,8 @@ class Window(QMainWindow):
     def check_clicked_tracked(self, click):
         check_clicked_tracked.do(self, click)
 
-    def check_founds(self, colored=None):
-        check_founds.do(self, colored)
+    def check_founds(self):
+        check_founds.do(self)
 
     def clear_tool(self, use, tex_or_col):
         clear_tool.do(self, use, tex_or_col)
@@ -334,8 +396,8 @@ class Window(QMainWindow):
     def clipping(self, use, param):
         clipping.do(self, use, param)
 
-    def create_geotiff(self):
-        create_geotiff.do()
+    def create_geotiff(self, res):
+        create_geotiff.do(self, res)
 
     def update_window_height(self):
         update_window_height.do(self)
@@ -347,6 +409,44 @@ class Window(QMainWindow):
 
 def colonia_4d():
     app = QApplication(sys.argv)
-    w = Window()
-    w.show()
+
+    app.setStyleSheet('''
+        #system_name {
+            font-size: 80px;
+            color: #DAA520;
+        }
+        
+        #current_task {
+            font-size: 30px;
+            color: #BEBEBE;
+        }
+        
+        #loading_sign {
+            font-size: 30px;
+            color: #BEBEBE;
+        }
+        
+        QFrame {
+            background-color: #0c1726;
+            color: rgb(220, 220, 220);
+        }
+        
+        QProgressBar {
+            backgrund-color: #BEBEBE;
+            color: rgb(200, 200, 200);
+            border-style: none;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 30px
+        }
+        
+        QProgressBar::chunk {
+            border-radius: 10px;
+            background-color: #E69F56;
+        }
+    ''')
+
+    loading_screen = LoadingScreen()
+    loading_screen.show()
+
     sys.exit(app.exec_())

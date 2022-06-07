@@ -5,9 +5,7 @@
 # ---------------------------------------------------------------------------
 import shutil
 
-from app_functions.search_for_format import search_for_format
-
-from data.dictionarys import old_utm_coords
+from app_functions.general.search_for_format import search_for_format
 
 
 def do(utm_path: str, shift_path: str):

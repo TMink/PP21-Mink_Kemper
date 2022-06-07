@@ -5,12 +5,13 @@
 # ---------------------------------------------------------------------------
 import pyvista as pv
 
-from data.dictionarys import founds, segmentation_extraction_clipped_layers, shapefiles_layers, decimated_layers, \
+from data.dictionarys import founds, segmentation_extraction_clipped_layers, shapefiles_layers, original_layers, \
     shapefiles
 from data.lists import found_coordinates, found_names, colored_founds
 
 
-def do(self, colored=None):
+def do(self):
+
     checked_seg_ex = [
         self.segmentation_tool_texture.isChecked(),
         self.segmentation_tool_color.isChecked(),
@@ -19,8 +20,7 @@ def do(self, colored=None):
     ]
 
     checked_shp = [
-        self.shapefile_tool_texture.isChecked(),
-        self.shapefile_tool_color.isChecked()
+        self.shapefile_tool_load.isChecked()
     ]
 
     box = None
@@ -33,7 +33,7 @@ def do(self, colored=None):
 
     if not any(checked_seg_ex) and not any(
             checked_shp) and not segmentation_extraction_clipped_layers and not shapefiles_layers:
-        item = next(iter(decimated_layers.items()))[1]
+        item = next(iter(original_layers.items()))[1]
         box = pv.Box(item.bounds)
     elif not any(checked_shp) and not shapefiles_layers:
         box = pv.Box(segmentation_extraction_clipped_layers['clipped_layer_0'].bounds)
@@ -47,10 +47,10 @@ def do(self, colored=None):
     count_dooku = 0
     for elem in points_inside_box:
         if elem == 0:
-            self.hide_checkbox(count_dooku)
+            self.f_checkbox_hide(count_dooku)
             count_dooku += 1
         if elem == 1:
-            self.show_checkbox(count_dooku)
+            self.f_checkbox_show(count_dooku)
             count_dooku += 1
 
     for selected, point, name in zip(points_inside_box, found_coordinates, found_names):

@@ -5,13 +5,14 @@
 # ---------------------------------------------------------------------------
 import time
 
-from app_functions.change_format import obj_to_ply, shp_to_poly, utm_to_shift
-from app_functions.get_data import get_founds, get_interaction_objects, get_meshes, get_shapefiles, get_textures
-from app_functions.mesh_manipulation import decimate_meshes, translate_interaction_objects
+from app_functions.change_format import obj_to_ply, utm_to_shift
+from app_functions.get_data import get_founds, get_interaction_objects, get_meshes, get_textures, get_shapefiles
+from app_functions.mesh_manipulation import translate_interaction_objects
 import app_window.pyvista_ui as ui
 
-from data.dictionarys import *
-from data.lists import *
+from data.dictionarys import original_layers, interaction_objects, shapefiles, shapefiles_colors, \
+    shapefiles_colors_actual
+from data.lists import textures, found_coordinates, found_names
 
 UTM_PATH = 'resources/models/excavation_layers/layers_utm/'
 OBJ_PATH = 'resources/models/excavation_layers/layers_shift/obj/'
@@ -19,11 +20,23 @@ PLY_PATH = 'resources/models/excavation_layers/layers_shift/ply/'
 JPG_PATH = 'resources/models/excavation_layers/layers_shift/ply/decimated_layers/'
 DECIMATED_PLY_PATH = 'resources/models/excavation_layers/layers_shift/ply/decimated_layers/'
 
-OBJECT_OBJ_PATH = 'resources/models/interactable_objects/obj/'
-OBJECT_PLY_PATH = 'resources/models/interactable_objects/ply/'
+OBJECT_OBJ_PATH = 'resources/models/interaction_objects/obj/'
+OBJECT_PLY_PATH = 'resources/models/interaction_objects/ply/'
 
 SHP_PATH = 'resources/models/shapefiles/shp/'
 VTK_PATH = 'resources/models/shapefiles/vtk/'
+
+tasks_names = [
+    'Changing utm- to shift-coordinates',
+    'Changing layer format from ".obj" to ".ply"',
+    'Load original meshes',
+    'Load textures',
+    'Changing interaction object format from ".obj" to ".ply"',
+    'Load interaction objects',
+    'Load shapefiles',
+    'Translate interaction objects',
+    'Load founds'
+]
 
 tasks = {}
 task = lambda t: tasks.setdefault(t.__name__, t)
@@ -39,19 +52,19 @@ def layers___object_to_ply():
     obj_to_ply.do(obj_path=OBJ_PATH, ply_path=PLY_PATH)
 
 
-@task
-def layers___decimate_meshes():
-    decimate_meshes.do(ply_path=PLY_PATH, decimated_ply_path=DECIMATED_PLY_PATH)
+#@task
+#def layers___decimate_meshes():
+#    decimate_meshes.do(ply_path=PLY_PATH, decimated_ply_path=DECIMATED_PLY_PATH)
 
 
 @task
 def layers_origional___get_meshes():
-    get_meshes.do(dict=original_layers, ply_path=PLY_PATH)
+    get_meshes.do(mesh_dict=original_layers, ply_path=PLY_PATH)
 
 
-@task
-def layers_decimated___get_meshes():
-    get_meshes.do(dict=decimated_layers, ply_path=DECIMATED_PLY_PATH)
+#@task
+#def layers_decimated___get_meshes():
+#    get_meshes.do(dict=decimated_layers, ply_path=DECIMATED_PLY_PATH)
 
 
 @task
@@ -66,37 +79,31 @@ def interaction_objects___obj_to_ply():
 
 @task
 def interaction_objects___get_interaction_objects():
-    get_interaction_objects.do(io_dict=interactable_objects, ply_path=OBJECT_PLY_PATH)
+    get_interaction_objects.do(io_dict=interaction_objects, ply_path=OBJECT_PLY_PATH)
+
+
+#@task
+#def shapefiles___shp_to_poly():
+#    shp_to_poly.do(shp_path=SHP_PATH, vtk_path=VTK_PATH)
+#    print('Finished')
 
 
 @task
 def shapefiles___get_shapefiles():
-    get_shapefiles.do(sf_dict=shapefiles, vtk_path=VTK_PATH)
+    get_shapefiles.do(sf_dict=shapefiles, sf_c_dict=shapefiles_colors, sf_c_a_dict=shapefiles_colors_actual, vtk_path=VTK_PATH)
 
 
 @task
 def interaction_objects___translate_interaction_objects():
-    translate_interaction_objects.do(data=interactable_objects.values())
+    translate_interaction_objects.do(data=interaction_objects.values())
 
 
 @task
 def founds___get_founds():
-    get_founds.do(data=decimated_layers, coords=found_coordinates, names=found_names)
+    get_founds.do(data=original_layers, cords=found_coordinates, names=found_names)
+    print(f'erster Versuch: {len(found_coordinates)}')
 
 
 @task
 def start():
     ui.colonia_4d()
-
-
-def compute():
-    without_start = [func_name for func_name in tasks.keys()]
-    without_start = without_start[:-1]
-    for key in without_start:
-        tasks[key]()
-        time.sleep(0.2)
-        yield
-
-
-def task_quantity():
-    return len(tasks) - 1

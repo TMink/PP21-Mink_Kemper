@@ -16,11 +16,10 @@ def do(self):
     self.found_label.setStyleSheet(
         open('resources/style_sheets/label_style_sheet.txt').read().replace('\n', ''))
     self.found_label.setFont(QFont('helvetiker regular', 15))
-    self.found_label.setText('Hello World')
+    #self.found_label.setText('')
     self.found_label.setAutoFillBackground(True)
     self.found_label.setFixedWidth(500)
     self.found_label.hide()
-    self.info_panel_layout.addWidget(self.found_label, alignment=QtCore.Qt.AlignTop)
 
     # checkbox
     for i in range(0, len(found_coordinates)):
@@ -39,7 +38,6 @@ def do(self):
         self.found_scroll_area_layout.addWidget(elem)
 
     self.found_scroll_area_layout.addItem(self.spacer_item)
-
     self.found_scroll_area_widget.setLayout(self.found_scroll_area_layout)
 
     self.found_scroll_area.setWidgetResizable(True)
@@ -50,4 +48,5 @@ def do(self):
     self.found_scroll_area.hide()
     self.found_scroll_area.setWidget(self.found_scroll_area_widget)
 
+    self.info_panel_layout.addWidget(self.found_label, alignment=QtCore.Qt.AlignTop)
     self.info_panel_layout.addWidget(self.found_scroll_area)

@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------------------
 import subprocess
 
-from app_functions.search_for_format import search_for_format
+from app_functions.general.search_for_format import search_for_format
 from data.dictionarys import geotiff_bounds
 from data.lists import camera_view
 

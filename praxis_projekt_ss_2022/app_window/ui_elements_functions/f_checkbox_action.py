@@ -10,13 +10,18 @@ from data.lists import colored_founds
 
 
 def do(self, state=None):
+    print('test1')
     if Qt.Checked == state:
-        change_found_color()
-        self.ui_outsourced_functions['check_founds'](self, colored=colored_founds)
+        print('test2')
+        change_found_color.do()
+        print('test3')
+        self.check_founds()
+        print('test4')
         self.founds_show_hide.setChecked(True)
+        print('test5')
         self.found_label.setText('Interactionmode On')
     else:
-        change_found_color()
-        self.ui_outsourced_functions['check_founds'](self, colored=colored_founds)
+        change_found_color.do()
+        self.check_founds()
         self.founds_show_hide.setChecked(True)
         self.found_label.setText('Interactionmode Off')

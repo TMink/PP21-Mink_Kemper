@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------------------
 import shutil
 import pymeshlab
-from app_functions.search_for_format import search_for_format
+from app_functions.general.search_for_format import search_for_format
 
 ms = pymeshlab.MeshSet()
 

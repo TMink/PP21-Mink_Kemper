@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------------------
 import pyvista as pv
 
-from data.dictionarys import excavation_layers, segmentation_extraction_clipped_layers, decimated_layers
+from data.dictionarys import excavation_layers, segmentation_extraction_clipped_layers, original_layers
 from data.lists import interaction_actors, plotted_interaction_actors
 
 
@@ -16,6 +16,6 @@ def do(self):
         # self.hide_show_interaction_side_panel()
         mesh = pv.Cube()
         name = 'Cube'
-        mesh.translate(next(iter(decimated_layers.items()))[1].center, inplace=True)
+        mesh.translate(next(iter(original_layers.items()))[1].center, inplace=True)
         plotted_interaction_actors.append(self.plotter.add_mesh(mesh=mesh, name=name))
         interaction_actors.append(name)
