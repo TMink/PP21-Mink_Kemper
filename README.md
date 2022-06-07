@@ -13,21 +13,21 @@ Das Ergebnis stellt eine 3D-Anwendungssoftware dar, welche es ermöglicht, einko
 3.9
 
 ## Libraries
-- pyvista
-- PyQt5
-- sys
 - os
-- pyvistaqt
+- sys
+- re
+- time
 - shutil
+- subprocess
+- pyvista
+- pyvistaqt
+- PyQt5
 - pymeshlab
 - pyacvd
-- geopandas
 - numpy
-- subprocess
-- re
 - mathplotlib
 - functools
-- rasterio (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#rasterio)
-- time
 - fiona (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#fiona)
 - gdal (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal)
+- rasterio (.whl: https://www.lfd.uci.edu/~gohlke/pythonlibs/#rasterio)
+- geopandas
