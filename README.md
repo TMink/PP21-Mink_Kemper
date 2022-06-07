@@ -20,3 +20,5 @@
 - functools
 - rasterio
 - time
+- fiona
+- gdal
