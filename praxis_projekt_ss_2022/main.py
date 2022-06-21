@@ -8,7 +8,6 @@ from alive_progress import alive_bar
 import app_tasks.tasks
 
 
-
 def main():
 
     app_tasks.tasks.tasks['start']()

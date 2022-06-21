@@ -3,12 +3,6 @@
 # ---------------------------------------------------------------------------
 """
 Creates a GeoTiff from geospatial-raster-Data and .tiff-image
-
--1- Creates the GeoTiff image and saves it in GEOTIFF_PATH
--1.1- Search for new .tiff-image
--1.2- Combine all Data to create GeoTiff
--2- Connect the right axis. A different perspective can mean different position of axis
--3- Get the rest of the utm-cords and connect them to the shift cords
 """
 # ---------------------------------------------------------------------------
 import subprocess
@@ -22,15 +16,15 @@ GEOTIFF_PATH = 'resources/screenshots/geotiff/'
 COORDS_PATH = 'database/utm_coords/'
 
 
-# -1-
+# Creates the GeoTiff image and saves it in GEOTIFF_PATH
 def do():
-    # -1.1-
+    # Search for new .tiff-image
     tiff_list = search_for_format(TIFF_PATH, ['.tiff'], cut=True)
     geotiff_list = search_for_format(GEOTIFF_PATH, ['.tiff'], cut=True)
 
     tiff = [elem for elem in tiff_list if elem not in geotiff_list]
 
-    # -1.2-
+    # Combine all Data to create GeoTiff
     try:
         utm_rest = utm_cords()
 
@@ -49,7 +43,7 @@ def do():
         print('empty list')
 
 
-# -2-
+# Connect the right axis. A different perspective can mean different position of axis
 def directions_specific(x: float, y: float):
     cords = {
         'top_bottom': 0.0,
@@ -65,7 +59,7 @@ def directions_specific(x: float, y: float):
     return cords
 
 
-# -3-
+# Get the rest of the utm-cords and connect them to the shift cords
 def utm_cords():
     cords_list = search_for_format(COORDS_PATH, ['txt'], cut=False)
 

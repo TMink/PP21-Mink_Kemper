@@ -95,17 +95,11 @@ def do(self):
     # ** Interaction Object/-s **
     self.interaction_objects_menu.setFont(QFont(FONT_NAME, 10))
 
-    # * show/hide object/-s *
-    self.interaction_objects_show_hide.setStatusTip('Load found/-s')
-    self.interaction_objects_show_hide.setChecked(False)
-    # self.objects.triggered.connect(TODO: add function name)
-
     # * Info panel *
     self.interaction_objects_info_panel.setStatusTip('Show/Hide info panel')
     self.interaction_objects_info_panel.setChecked(False)
     self.interaction_objects_info_panel.triggered.connect(self.io_info_panel_hide_show)
 
-    self.interaction_objects_menu.addAction(self.interaction_objects_show_hide)
     self.interaction_objects_menu.addAction(self.interaction_objects_info_panel)
 
     # ** Founds **

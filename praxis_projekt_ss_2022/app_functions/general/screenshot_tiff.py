@@ -3,19 +3,12 @@
 # ---------------------------------------------------------------------------
 """
 Creates a second plot(off-screen) of the currently used meshes and takes the screenshot in the chosen resolution
-
--1-
--1.1- Add the currently used meshes to plot
--2- Get the position sequence for clipped_frustum.bounds and change camera settings to match main plot. The sequence
-    depends on the perspective in which the camera views the object.
--3- Depending of the perspective the frustum needs to be cut invert or not
--4- Create a clipped frustum, take the cords of the bounds and write them in the correct sequence into geotiff_bounds
 """
 # ---------------------------------------------------------------------------
 import pyvista as pv
 from datetime import datetime
 from data.dictionarys import original_layers, segmentation_extraction_clipped_layers, shapefiles_clipped_layers, \
-    geotiff_bounds
+    geotiff_bounds, geotiff_new
 from data.lists import textures, colors, camera_view
 
 # set plotter background to 'transparent'
@@ -27,12 +20,16 @@ plotter = pv.Plotter(off_screen=True)
 
 
 # creates a second plot and takes a screenshot(.tiff)
-def do(tool_name: str, tex_col: str, res: list):
+def do(tool_name: str, tex_col: str, res: list, res_name: str):
     plotter.window_size = res
     plotter.add_mesh(mesh=list(original_layers.values())[0], name='dummy', opacity=0.0, show_scalar_bar=False)
 
-    # -1.1-
-    if tool_name == 'extraction_layers':
+    plotter.remove_actor(original_layers.keys())
+    plotter.remove_actor(segmentation_extraction_clipped_layers.keys())
+    plotter.remove_actor(shapefiles_clipped_layers.keys())
+
+    # Add the currently used meshes to plot
+    if tool_name == 'excavation_layers':
         if tex_col == 'tex':
             for idx, (mesh_name, mesh_data, tex) in enumerate(zip(original_layers.keys(), original_layers.values(),
                                                                   textures)):
@@ -64,13 +61,20 @@ def do(tool_name: str, tex_col: str, res: list):
                 plotter.add_mesh(mesh=clipped_data, name=clipped_name, color=color, label=clipped_name)
 
     change_camera()
-    plotter.screenshot(filename=f'resources/screenshots/tiff/tif_image.tiff', transparent_background=True)
 
-    # plotter.screenshot(filename=f'resources/tif/tif_image_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.tiff',
-    #                   transparent_background=True)
+    tiff_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    tiff_name = f'tiff_image_{tiff_datetime}_{res_name}_{camera_view[0]}.tiff'
+
+    geotiff_new['geotiff'] = tiff_name
+
+    plotter.screenshot(filename=
+                       f'resources/screenshots/tiff/{tiff_name}',
+                       transparent_background=True)
 
 
-# -2-
+# Get the position sequence for clipped_frustum.bounds and change camera settings to match main plot. The 'res'-sequence
+# depends on the perspective in which the camera views the object.
 def get_position_sequence():
     if camera_view[0] == 'top':
         res = [0, 1, 2, 3]
@@ -109,7 +113,7 @@ def get_position_sequence():
     return res
 
 
-# -3-
+# Depending of the perspective the frustum needs to be cut invert or not
 def invert_clip():
     if camera_view[0] == 'top' or camera_view[0] == 'left' or camera_view[0] == 'front':
         res = True
@@ -118,12 +122,12 @@ def invert_clip():
     return res
 
 
-# -4-
+# Create a clipped frustum, take the cords of the bounds and write them in the correct sequence into geotiff_bounds
 def change_camera():
     position_sequence = get_position_sequence()
     frustum = plotter.camera.view_frustum(1.77757088447)
 
-    plane = pv.Plane(center=[0, 0, 0], i_size=100, j_size=100)
+    plane = pv.Plane(center=[0, 0, 0], i_size=50, j_size=50)
 
     if camera_view != 'isometric' and original_layers:
         if camera_view[0] == 'top' or camera_view[0] == 'bottom':

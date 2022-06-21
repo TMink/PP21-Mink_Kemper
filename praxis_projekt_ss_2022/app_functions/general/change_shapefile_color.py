@@ -19,11 +19,14 @@ def do(self):
                     if key == shapefile_checkbox_key[:shapefile_checkbox_key.rfind('_')]:
                         shapefiles_colors_actual[shapefile_checkbox_key] = value
                         shapefiles_layers[shapefile_checkbox_key] = self.plotter.add_mesh(
-                            mesh=shapefiles[shapefile_checkbox_key], name=shapefile_checkbox_key, color=value, reset_camera=False)
+                            mesh=shapefiles[shapefile_checkbox_key], name=shapefile_checkbox_key, color=value,
+                            reset_camera=False)
                         shapefiles_selected_for_clipping[shapefile_checkbox_key] = shapefiles[shapefile_checkbox_key]
-            elif not shapefile_checkbox_value.isChecked() and shapefiles_colors_actual[shapefile_checkbox_key] != 'white':
+            elif not shapefile_checkbox_value.isChecked() and shapefiles_colors_actual[shapefile_checkbox_key] != \
+                    'white':
                 self.plotter.remove_actor(shapefiles_layers[shapefile_checkbox_key])
                 shapefiles_colors_actual[shapefile_checkbox_key] = 'white'
                 shapefiles_layers[shapefile_checkbox_key] = self.plotter.add_mesh(
-                    mesh=shapefiles[shapefile_checkbox_key], name=shapefile_checkbox_key, color='white', reset_camera=False)
+                    mesh=shapefiles[shapefile_checkbox_key], name=shapefile_checkbox_key, color='white',
+                    reset_camera=False)
                 del shapefiles_selected_for_clipping[shapefile_checkbox_key]

@@ -9,11 +9,11 @@ import rasterio.plot
 
 from app_functions.change_format import tiff_to_geotiff
 from app_functions.general import screenshot_tiff
-from data.dictionarys import excavation_layers, segmentation_extraction_layers, shapefiles_layers
+from data.dictionarys import excavation_layers, segmentation_extraction_layers, shapefiles_layers, geotiff_new
 from data.lists import camera_view
 
 
-def do(self, res: list):
+def do(self, res: list, res_name: str):
     tool_name = '_'
     tex_col = '_'
     if excavation_layers:
@@ -36,10 +36,10 @@ def do(self, res: list):
             tex_col = 'col'
 
     if camera_view[0] != 'isometric':
-        screenshot_tiff.do(tool_name=tool_name, tex_col=tex_col, res=res)
+        screenshot_tiff.do(tool_name=tool_name, tex_col=tex_col, res=res, res_name=res_name)
 
         tiff_to_geotiff.do()
 
-        data_name = 'resources/screenshots/geotiff/tif_image.tiff'
+        data_name = f'resources/screenshots/geotiff/{geotiff_new["geotiff"]}'
         tiff = rasterio.open(data_name)
         rasterio.plot.show(tiff)

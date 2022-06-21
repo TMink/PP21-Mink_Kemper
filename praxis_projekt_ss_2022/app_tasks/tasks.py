@@ -103,7 +103,6 @@ def interaction_objects___translate_interaction_objects():
 @task
 def founds___get_founds():
     get_founds.do(data=original_layers, cords=found_coordinates, names=found_names)
-    print(f'erster Versuch: {len(found_coordinates)}')
 
 
 @task

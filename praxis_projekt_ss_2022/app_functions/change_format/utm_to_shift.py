@@ -3,12 +3,6 @@
 # ---------------------------------------------------------------------------
 """
 Converts the cords of a mesh from UTM to Shift
-
--1- Get all files (.obj, .jpg, .mtl) from utm_path and shift_path
--2- Looks if files are already present in vtk_path
--3- Copy all non .obj files into ply_path
--4- Execute a global shift on every .obj, save the rest of utm-cords inside a .txt-file and save the new .obj in
-    shp_path
 """
 # ---------------------------------------------------------------------------
 import shutil
@@ -21,26 +15,27 @@ def do(utm_path: str, shift_path: str):
     run_once = True
     decimal_places = 6
 
-    # -1-
+    # Get all files (.obj, .jpg, .mtl) from utm_path and shift_path
     utm_obj_list = search_for_format(utm_path, ['obj'], cut=True)
     utm_rest_list = search_for_format(utm_path, ['jpg', 'mtl'], cut=False)
     shift_obj_list = search_for_format(shift_path, ['obj'], cut=True)
     shift_rest_list = search_for_format(shift_path, ['jpg', 'mtl'], cut=False)
 
-    # -2-
+    # Looks if files are already present in vtk_path
     new_obj = [elem for elem in utm_obj_list if elem not in shift_obj_list]
     new_rest = [elem for elem in utm_rest_list if elem not in shift_rest_list]
 
     if new_obj and new_rest:
 
-        # -3-
+        # Copy all non .obj files into ply_path
         for elem in new_rest:
             try:
                 shutil.copyfile(utm_path + elem, shift_path + elem)
             except OSError:
                 print(f'cannot copy {elem} from {utm_path} to {shift_path}')
 
-        # -4-
+        # Execute a global shift on every .obj, save the rest of utm-cords inside a .txt-file and save the new .obj in
+        # shp_path
         for idx, utm_elem in enumerate(new_obj):
             try:
                 utm = open(utm_path + utm_elem + '.obj', 'r')

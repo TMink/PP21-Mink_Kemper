@@ -11,7 +11,7 @@ import os
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QFrame, QPushButton, QMainWindow, QScrollArea, QAction, QMenu, \
-    QLabel, QSpacerItem, QSizePolicy, QWidget, QGridLayout, QApplication, QGroupBox, QProgressBar
+    QLabel, QSpacerItem, QSizePolicy, QWidget, QGridLayout, QApplication, QProgressBar
 from pyvistaqt import QtInteractor
 
 from app_window.ui_elements_init import init_found_info_panel, init_interaction_objects_info_panel, \
@@ -27,7 +27,7 @@ from app_window.ui_mesh_functions import load_excavation_side, load_segmentation
     load_shapefile_tool
 
 from app_window.ui_outsourced_functions import build_legend, clipping, build_founds, build_dummy_object, clear_tool, \
-    check_founds, callback, check_clicked_tracked, create_geotiff, update_window_height, loading_tasks_and_screen
+    check_founds, callback, create_geotiff, update_window_height, loading_tasks_and_screen
 
 from data.lists import *
 
@@ -89,8 +89,8 @@ class Window(QMainWindow):
         self.plotter = QtInteractor()
         self.main_layout.addWidget(self.plotter.interactor)
 
+        # background image
         self.plotter.add_background_image('resources/assets/colonia_4d_background_one_color.png')
-        self.plotter.track_click_position(callback=self.check_clicked_tracked, side='l')
 
         # spacer item
         self.spacer_item = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -178,18 +178,22 @@ class Window(QMainWindow):
         ***            -> Load Shapefiles           (shapefile_tool_load)                                   ***
         ***            -> show/hide info panel      (shapefile_tool_info_panel)                             ***
         ***    -> Interaction objects               (interaction_objects_menu)                              ***
-        ***        -> show/hide object/-s           (interaction_objects_show_hide)                         ***
         ***        -> show/hide info panel          (interaction_objects_info_panel)                        ***
         ***    -> Founds                            (founds_menu)                                           ***
         ***        -> show/hide found/-s            (founds_show_hide)                                      ***
         ***        -> show/hide found info panel    (founds_info_panel)                                     ***
+        ***    -> GeoTIFF Screenshot                (geotiff_menu)                                          ***
+        ***        -> 1920_1080(Full HD)            (geotiff_1920_1080)                                     ***
+        ***        -> 3840_2160(4k)                 (geotiff_3840_2160)                                     ***
+        ***        -> 7680_4320(8k)                 (geotiff_7680_4320)                                     ***
+        ***        -> 15360_8640(16k)               (geotiff_15360_8640)                                    ***
         *******************************************************************************************************
         '''
         self.main_menu = self.menuBar()
         self.file_menu = self.main_menu.addMenu('File')
         self.tools_menu = self.main_menu.addMenu('Tools')
         self.interaction_objects_menu = self.main_menu.addMenu('Interaction objects')
-        self.founds_menu = self.main_menu.addMenu('Found/-s')
+        self.founds_menu = self.main_menu.addMenu('Founds')
         self.geotiff_menu = self.main_menu.addMenu('GeoTiff Screenshot')
 
         self.excavation_side_menu = QMenu('View Excavations side', self)
@@ -214,8 +218,7 @@ class Window(QMainWindow):
         self.interaction_objects_info_panel = QAction('Info Panel', self, checkable=True)
         self.founds_info_panel = QAction('Info Panel', self, checkable=True)
 
-        self.interaction_objects_show_hide = QAction('Show/Hide object/-s', self, checkable=True)
-        self.founds_show_hide = QAction('Show/Hide label/-s', self, checkable=True)
+        self.founds_show_hide = QAction('Show found/-s', self, checkable=True)
 
         init_menu_bar.do(self)
 
@@ -333,16 +336,16 @@ class Window(QMainWindow):
         sf_checkbox_show.do(self, pos)
 
     def take_screenshot_1920_1080(self):
-        create_geotiff.do(self, res=[1920, 1080])
+        create_geotiff.do(self, res=[1920, 1080], res_name='full-hd')
 
     def take_screenshot_3840_2160(self):
-        create_geotiff.do(self, res=[3840, 2160])
+        create_geotiff.do(self, res=[3840, 2160], res_name='4k')
 
     def take_screenshot_7680_4320(self):
-        create_geotiff.do(self, res=[7680, 4320])
+        create_geotiff.do(self, res=[7680, 4320], res_name='8k')
 
     def take_screenshot_15360_8640(self):
-        create_geotiff.do(self, res=[15360, 8640])
+        create_geotiff.do(self, res=[15360, 8640], res_name='16k')
 
 
 
@@ -381,9 +384,6 @@ class Window(QMainWindow):
 
     def callback(self, mesh):
         callback.do(mesh)
-
-    def check_clicked_tracked(self, click):
-        check_clicked_tracked.do(self, click)
 
     def check_founds(self):
         check_founds.do(self)

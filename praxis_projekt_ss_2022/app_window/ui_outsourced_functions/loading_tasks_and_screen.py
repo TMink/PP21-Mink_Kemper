@@ -17,7 +17,6 @@ def do(self, b):
     without_start = [func_name for func_name in tasks.tasks.keys()]
     without_start = without_start[:-1]
     for idx, (key, task) in enumerate(zip(without_start, tasks_to_do)):
-        print(key)
         tasks.tasks[key]()
         self.current_task.setText(f'<strong> {task} </strong>')
         self.progressbar.setValue(idx * 10)

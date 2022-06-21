@@ -3,12 +3,6 @@
 # ---------------------------------------------------------------------------
 """
 Converts every new shp files into PolyData-Objects
-
--1- Get all files (.shp, .cpg, .dbf, .prj, .sbn, .sbx, .shx, .sr) from shp_path and vtk_path
--2- Looks if files are already present in vtk_path
--3- Copy all non .obj files into ply_path
--4- Convert .shp-files into .vtk-files, shift the cords, attach an index value polygons and save those polygons into
-    vtk_path
 """
 # ---------------------------------------------------------------------------
 import shutil
@@ -44,7 +38,7 @@ SUB_PATH = \
 
 
 def do(shp_path: str, vtk_path: str):
-    # -1-
+    # Get all files (.shp, .cpg, .dbf, .prj, .sbn, .sbx, .shx, .sr) from shp_path and vtk_path
     shp_list = search_for_format(path=shp_path, format_type=['shp'], cut=True, exceptions=['sr', 'xml'])
     shp_rest_list = search_for_format(path=shp_path,
                                       format_type=['cpg', 'dbf', 'prj', 'sbn', 'sbx', 'shx', 'sr'], cut=False)
@@ -57,18 +51,19 @@ def do(shp_path: str, vtk_path: str):
         if elem.rfind('_'):
             vtk_list[idx] = elem[:elem.rfind('_')]
 
-    # -2-
+    # Looks if files are already present in vtk_path
     new_shp = [elem for elem in shp_list if elem not in vtk_list]
     new_rest = [elem for elem in shp_rest_list if elem not in vtk_rest_list]
 
-    # -3-
+    # Copy all non .obj files into ply_path
     for elem in new_rest:
         try:
             shutil.copyfile(shp_path + elem, vtk_path + elem)
         except OSError:
             print(f'cannot copy {elem} from {shp_path} to {vtk_path}')
 
-    # -4-
+    # Convert .shp-files into .vtk-files, shift the cords, attach an index value polygons and save those polygons into
+    # vtk_path
     if new_shp:
         print('New Files:')
         for elem in new_shp:
